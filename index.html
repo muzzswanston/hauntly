@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly</title>
+  <title>Hauntly AR</title>
 
-  <!-- Secure API Key Injection -->
+  <!-- 8th Wall Web AR (Free Tier) -->
+  <script src="https://apps.8thwall.com/xrweb"></script>
+
+  <!-- Secure Google Maps API Key -->
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!API_KEY) {
@@ -24,38 +27,48 @@
     body { background:#0a0a0a; color:#fff; }
     header { background:#1a1a2e; padding:1rem; text-align:center; }
     h1 { font-size:1.4rem; margin:0; }
-    #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
+    #gps, #arBtn { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin:0.5rem; cursor:pointer; }
     #map { height:80vh; width:100%; }
     footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
+    #arContainer { display:none; width:100%; height:100vh; position:fixed; top:0; left:0; z-index:9999; }
+    #arBtn { position:fixed; bottom:20px; right:20px; z-index:1000; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
 <body>
   <header>
-    <h1>Hauntly</h1>
-    <p>Interactive map of haunted locations</p>
+    <h1>Hauntly AR</h1>
+    <p>Interactive map + AR ghosts</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
-  <footer>Tap pins for haunt details. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
+  <button id="arBtn">AR Mode</button>
+  <footer>Tap pins for details. Get near a haunt to see AR ghost.</footer>
 
-  <!-- Global initMap -->
+  <!-- AR Camera View -->
+  <div id="arContainer">
+    <a-scene embedded xrweb="reality:ar" renderer="colorManagement:true">
+      <a-camera gps-camera rotation-reader></a-camera>
+      <a-entity id="ghostEntity" visible="false"></a-entity>
+    </a-scene>
+  </div>
+
+  <!-- Global initMap + AR Logic -->
   <script>
-    let map;
+    let map, userMarker;
     const haunts = [
-      // [Name, lat, lng, short_desc, long_desc, icon_type] — "ghost" or "gravestone"
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "ghost"],
-      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "ghost"],
-      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "ghost"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "gravestone"],
-      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "gravestone"],
-      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "ghost"],
-      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks.", "ghost"],
-      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "ghost"],
-      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "ghost"],
-      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "ghost"],
-      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "ghost"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "ghost"]
+      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps.", "ghost"],
+      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site with phantom patients.", "ghost"],
+      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures.", "ghost"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets.", "gravestone"],
+      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots.", "gravestone"],
+      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells with screams.", "ghost"],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Sailors’ spirits pacing docks.", "ghost"],
+      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Victims linger in dark laneways.", "ghost"],
+      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Ghostly children in garden.", "ghost"],
+      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Howling echoes and locked doors.", "ghost"],
+      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Hanged men walk corridors.", "ghost"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Convicts trapped in stone cells.", "ghost"]
     ];
 
     function initMap() {
@@ -73,27 +86,22 @@
           icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
 
-        // Use actual emoji characters
         const emoji = h[5] === "gravestone" ? "Grave" : "Ghost";
 
         const infoWindow = new google.maps.InfoWindow({
           content: `
             <div style="max-width:260px; color:#000; background:#fff; padding:10px; border-radius:8px; position:relative;">
-              <div style="position:absolute; top:8px; left:8px; font-size:1.8em; line-height:1;">
-                ${emoji}
-              </div>
+              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${emoji}</div>
               <div style="margin-left:50px;">
-                <b style="font-size:1.1em;">${h[0]}</b><br>
-                <p style="margin:6px 0; font-size:0.9em;">${h[3]}</p>
-                <p style="margin:6px 0; font-size:0.8em; font-style:italic; color:#555;">${h[4]}</p>
+                <b>${h[0]}</b><br>
+                <p style="font-size:0.9em;">${h[3]}</p>
+                <p style="font-size:0.8em; font-style:italic; color:#555;">${h[4]}</p>
               </div>
             </div>
           `
         });
 
-        marker.addListener("click", () => {
-          infoWindow.open(map, marker);
-        });
+        marker.addListener("click", () => infoWindow.open(map, marker));
       });
     }
 
@@ -104,14 +112,76 @@
           pos => {
             const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             map.setCenter(userPos);
-            map.setZoom(12);
+            map.setZoom(16);
+            if (!userMarker) {
+              userMarker = new google.maps.Marker({
+                position: userPos,
+                map: map,
+                icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+              });
+            } else {
+              userMarker.setPosition(userPos);
+            }
           },
-          () => alert("GPS access denied")
+          () => alert("GPS denied")
         );
-      } else {
-        alert("GPS not supported");
       }
     };
+
+    // AR Mode
+    const arBtn = document.getElementById("arBtn");
+    const arContainer = document.getElementById("arContainer");
+    const ghostEntity = document.getElementById("ghostEntity");
+
+    arBtn.onclick = () => {
+      document.getElementById("map").style.display = "none";
+      arContainer.style.display = "block";
+      arBtn.style.display = "none";
+    };
+
+    // Load 3D Models
+    const ghostModel = "https://cdn.jsdelivr.net/gh/grok-xai/hauntly-ar/ghost.glb";
+    const graveModel = "https://cdn.jsdelivr.net/gh/grok-xai/hauntly-ar/gravestone.glb";
+
+    // Track user location in AR
+    navigator.geolocation.watchPosition(position => {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+
+      let nearest = null;
+      let minDist = Infinity;
+
+      haunts.forEach(h => {
+        const dist = getDistance(userLat, userLng, h[1], h[2]);
+        if (dist < minDist) {
+          minDist = dist;
+          nearest = h;
+        }
+      });
+
+      if (nearest && minDist < 100) { // Within 100m
+        const model = nearest[5] === "gravestone" ? graveModel : ghostModel;
+        ghostEntity.setAttribute("gltf-model", model);
+        ghostEntity.setAttribute("gps-entity-place", `latitude: ${nearest[1]}; longitude: ${nearest[2]}`);
+        ghostEntity.setAttribute("scale", "2 2 2");
+        ghostEntity.setAttribute("animation", "property: rotation; to: 0 360 0; loop: true; dur: 10000");
+        ghostEntity.setAttribute("visible", "true");
+      } else {
+        ghostEntity.setAttribute("visible", "false");
+      }
+    });
+
+    // Haversine distance
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
   </script>
 </body>
 </html>
