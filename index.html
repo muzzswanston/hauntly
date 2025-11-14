@@ -4,7 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hauntly</title>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PQmMU7a4r8Vq5zV2mU9kM8s&callback=initMap" async defer></script>
+  <script type="module">
+    const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!API_KEY) {
+      document.body.innerHTML = `<h1 style="color:red;text-align:center;margin-top:50px">Error: Missing API Key. Set VITE_GOOGLE_MAPS_API_KEY in Vercel.</h1>`;
+    } else {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  </script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
     body { background:#0a0a0a; color:#fff; }
@@ -19,32 +30,33 @@
 <body>
   <header>
     <h1>Hauntly</h1>
-    <p>Haunted spots from <a href="https://ghosttourbookings.com.au/" target="_blank" style="color:#00ff9d">Ghost Tour Bookings</a></p>
+    <p>Interactive map of haunted locations</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
-  <footer>Tap pins for ghost lore. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
+  <footer>Tap pins for haunt details. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
 
-  <script>
-    let map, markers = [];
+  <script type="module">
+    let map;
     const haunts = [
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Spirits of The Rocks Tour ($39)"],
-      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Q Station Ghostly Encounters ($59)"],
-      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Blue Mountains Ghost Bus ($86)"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Toowong Cemetery Tour ($30-55)"],
-      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "South Brisbane Cemetery ($30-55)"],
-      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "St Helena Tour ($90-120)"],
-      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Ghosts of Old City ($39)"],
-      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Hidden Melbourne Tour ($39)"],
-      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Altona Homestead Tour ($39)"],
-      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "J Ward Ghost Tour ($41)"],
-      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Adelaide Gaol Tour ($40)"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Hobart Penitentiary Tour ($35-45)"]
+      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways."],
+      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night."],
+      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights."],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones."],
+      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows."],
+      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence."],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks."],
+      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger."],
+      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden."],
+      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone."],
+      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors."],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left."],
     ];
 
-    function initMap() {
+    window.initMap = function() {
       map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 4, center: { lat: -25.2744, lng: 133.7751 },
+        zoom: 4,
+        center: { lat: -25.2744, lng: 133.7751 },
         styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
       });
 
@@ -55,11 +67,11 @@
           icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
         const info = new google.maps.InfoWindow({
-          content: `<b>${h[0]}</b><p>${h[3]}</p><p><i>${h[4]}</i> — <a href="https://ghosttourbookings.com.au/" target="_blank">Book</a></p>`
+          content: `<b>${h[0]}</b><p>${h[3]}</p><p><i>${h[4]}</i></p>`
         });
         m.addListener("click", () => info.open(map, m));
       });
-    }
+    };
 
     document.getElementById("gps").onclick = () => {
       navigator.geolocation?.getCurrentPosition(p => {
