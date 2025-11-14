@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hauntly</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-9tSrke72PQmMU7a4r8Vq5zV2mU9kM8s&callback=initMap" async defer></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
+    body { background:#0a0a0a; color:#fff; }
+    header { background:#1a1a2e; padding:1rem; text-align:center; }
+    h1 { font-size:1.4rem; margin:0; }
+    #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
+    #map { height:80vh; width:100%; }
+    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
+    @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hauntly</h1>
+    <p>Haunted spots from <a href="https://ghosttourbookings.com.au/" target="_blank" style="color:#00ff9d">Ghost Tour Bookings</a></p>
+    <button id="gps">Center on Me</button>
+  </header>
+  <div id="map"></div>
+  <footer>Tap pins for ghost lore. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
+
+  <script>
+    let map, markers = [];
+    const haunts = [
+      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Spirits of The Rocks Tour ($39)"],
+      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Q Station Ghostly Encounters ($59)"],
+      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Blue Mountains Ghost Bus ($86)"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Toowong Cemetery Tour ($30-55)"],
+      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "South Brisbane Cemetery ($30-55)"],
+      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "St Helena Tour ($90-120)"],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Ghosts of Old City ($39)"],
+      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Hidden Melbourne Tour ($39)"],
+      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Altona Homestead Tour ($39)"],
+      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "J Ward Ghost Tour ($41)"],
+      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Adelaide Gaol Tour ($40)"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Hobart Penitentiary Tour ($35-45)"]
+    ];
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4, center: { lat: -25.2744, lng: 133.7751 },
+        styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
+      });
+
+      haunts.forEach(h => {
+        const m = new google.maps.Marker({
+          position: { lat: h[1], lng: h[2] },
+          map, title: h[0],
+          icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+        });
+        const info = new google.maps.InfoWindow({
+          content: `<b>${h[0]}</b><p>${h[3]}</p><p><i>${h[4]}</i> — <a href="https://ghosttourbookings.com.au/" target="_blank">Book</a></p>`
+        });
+        m.addListener("click", () => info.open(map, m));
+      });
+    }
+
+    document.getElementById("gps").onclick = () => {
+      navigator.geolocation?.getCurrentPosition(p => {
+        const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        map.setCenter(pos); map.setZoom(12);
+      }, () => alert("GPS denied"));
+    };
+  </script>
+</body>
+</html>
