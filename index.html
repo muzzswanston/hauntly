@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hauntly</title>
 
-  <!-- Inject Google Maps with secure key -->
+  <!-- Secure API Key Injection -->
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!API_KEY) {
@@ -39,22 +39,23 @@
   <div id="map"></div>
   <footer>Tap pins for haunt details. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
 
-  <!-- Global initMap (required by Google) -->
+  <!-- Global initMap (required by Google Maps) -->
   <script>
     let map;
     const haunts = [
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways."],
-      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night."],
-      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights."],
-      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones."],
-      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows."],
-      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence."],
-      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks."],
-      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger."],
-      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden."],
-      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone."],
-      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors."],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left."]
+      // [Name, lat, lng, short_desc, long_desc, thumbnail_url]
+      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/The_Rocks_Sydney_2008.jpg/800px-The_Rocks_Sydney_2008.jpg"],
+      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Q_Station_Manly.jpg/800px-Q_Station_Manly.jpg"],
+      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Blue_Mountains_Australia.jpg/800px-Blue_Mountains_Australia.jpg"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Toowong_Cemetery_Queensland.jpg/800px-Toowong_Cemetery_Queensland.jpg"],
+      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/South_Brisbane_Cemetery.jpg/800px-South_Brisbane_Cemetery.jpg"],
+      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/St_Helena_Island_Prison_Ruins.jpg/800px-St_Helena_Island_Prison_Ruins.jpg"],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks.", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Williamstown_Historic_Docks.jpg/800px-Williamstown_Historic_Docks.jpg"],
+      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Melbourne_Laneway_at_Night.jpg/800px-Melbourne_Laneway_at_Night.jpg"],
+      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Altona_Homestead_Victoria.jpg/800px-Altona_Homestead_Victoria.jpg"],
+      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/J_Ward_Asylum_Ararat.jpg/800px-J_Ward_Asylum_Ararat.jpg"],
+      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Adelaide_Gaol_Hanging_Tower.jpg/800px-Adelaide_Gaol_Hanging_Tower.jpg"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hobart_Penitentiary_Chapel.jpg/800px-Hobart_Penitentiary_Chapel.jpg"]
     ];
 
     function initMap() {
@@ -73,11 +74,14 @@
         });
 
         const infoWindow = new google.maps.InfoWindow({
-          content: `<div style="color:#000; max-width:200px;">
-                      <b>${h[0]}</b><br>
-                      <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
-                      <p style="margin:4px 0; font-size:0.8em; font-style:italic;">${h[4]}</p>
-                    </div>`
+          content: `
+            <div style="max-width:260px; color:#000; background:#fff; padding:8px; border-radius:8px;">
+              <img src="${h[5]}" alt="${h[0]}" style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
+              <b style="font-size:1.1em;">${h[0]}</b><br>
+              <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
+              <p style="margin:4px 0; font-size:0.8em; font-style:italic; color:#555;">${h[4]}</p>
+            </div>
+          `
         });
 
         marker.addListener("click", () => {
