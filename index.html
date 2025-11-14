@@ -39,23 +39,23 @@
   <div id="map"></div>
   <footer>Tap pins for haunt details. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
 
-  <!-- Global initMap (required by Google Maps) -->
+  <!-- Global initMap -->
   <script>
     let map;
     const haunts = [
-      // [Name, lat, lng, short_desc, long_desc, thumbnail_url] — Actual verified photo
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "https://cdn.pixabay.com/photo/2017/08/07/06/13/sydney-2601993_1280.jpg"],
-      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "https://cdn.pixabay.com/photo/2016/11/29/07/23/manly-1867904_1280.jpg"],
-      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "https://cdn.pixabay.com/photo/2017/01/20/00/30/mountains-1994392_1280.jpg"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "https://cdn.pixabay.com/photo/2016/11/19/14/00/cemetery-1836616_1280.jpg"],
-      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "https://cdn.pixabay.com/photo/2016/11/19/14/00/cemetery-1836616_1280.jpg"],
-      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "https://cdn.pixabay.com/photo/2016/11/29/05/45/australia-1867453_1280.jpg"],
-      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks.", "https://cdn.pixabay.com/photo/2017/08/07/06/13/sydney-2601993_1280.jpg"],
-      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "https://cdn.pixabay.com/photo/2017/08/07/06/13/sydney-2601993_1280.jpg"],
-      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "https://cdn.pixabay.com/photo/2016/11/29/05/45/australia-1867453_1280.jpg"],
-      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "https://cdn.pixabay.com/photo/2016/11/19/14/00/cemetery-1836616_1280.jpg"],
-      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "https://cdn.pixabay.com/photo/2016/11/29/05/45/australia-1867453_1280.jpg"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "https://cdn.pixabay.com/photo/2016/11/29/05/45/australia-1867453_1280.jpg"]
+      // [Name, lat, lng, short_desc, long_desc, icon] — "ghost" or "gravestone"
+      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "ghost"],
+      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "ghost"],
+      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "ghost"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "gravestone"],
+      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "gravestone"],
+      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "ghost"],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks.", "ghost"],
+      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "ghost"],
+      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "ghost"],
+      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "ghost"],
+      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "ghost"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "ghost"]
     ];
 
     function initMap() {
@@ -73,13 +73,20 @@
           icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
 
+        // Choose emoji: gravestone for cemeteries, ghost for others
+        const icon = h[5] === "gravestone" ? "Grave" : "Ghost";
+
         const infoWindow = new google.maps.InfoWindow({
           content: `
-            <div style="max-width:260px; color:#000; background:#fff; padding:8px; border-radius:8px;">
-              <img src="${h[5]}" alt="${h[0]}" style="width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:8px;">
-              <b style="font-size:1.1em;">${h[0]}</b><br>
-              <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
-              <p style="margin:4px 0; font-size:0.8em; font-style:italic; color:#555;">${h[4]}</p>
+            <div style="max-width:260px; color:#000; background:#fff; padding:10px; border-radius:8px; position:relative;">
+              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">
+                ${icon}
+              </div>
+              <div style="margin-left:50px;">
+                <b style="font-size:1.1em;">${h[0]}</b><br>
+                <p style="margin:6px 0; font-size:0.9em;">${h[3]}</p>
+                <p style="margin:6px 0; font-size:0.8em; font-style:italic; color:#555;">${h[4]}</p>
+              </div>
             </div>
           `
         });
