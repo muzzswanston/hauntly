@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR – 98 Carora Cct</title>
+  <title>Hauntly AR – 3km Test Radius</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -37,12 +37,12 @@
 <body>
   <header>
     <h1>Hauntly AR</h1>
-    <p>Test at 98 Carora Circuit, Clyde North</p>
+    <p>Test 3km AR ghost at 98 Carora Cct</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
   <button id="arBtn">AR Mode</button>
-  <footer>Get near 98 Carora Cct to see AR ghost!</footer>
+  <footer>Ghost appears within 3km of your pin!</footer>
 
   <!-- AR Container -->
   <div id="arContainer">
@@ -54,37 +54,29 @@
   <script>
     let map, arWatcher;
     const haunts = [
-      // === YOUR UPDATED CARORA PIN ===
-      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "👻", "Your home – AR ghost appears when in range!", "ghost"],
-
-      // === SAMPLE HAUNTS ===
-      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
-      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments.", "gravestone"]
+      // === YOUR CARORA PIN (3km AR Range) ===
+      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "AR ghost appears within 3km!", "ghost"]
     ];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 10,
-        center: { lat: -38.105609, lng: 145.363497 }, // Centered on Carora
+        zoom: 12,
+        center: { lat: -38.105609, lng: 145.363497 },
         styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
       });
 
       haunts.forEach(h => {
-        const isCemetery = h[5] === "gravestone" || h[0].includes("Cemetery");
-        const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-        const emoji = isCemetery ? "🪦" : "👻";
-
         const marker = new google.maps.Marker({
           position: { lat: h[1], lng: h[2] },
           map: map,
           title: h[0],
-          icon: icon
+          icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
 
         const infoWindow = new google.maps.InfoWindow({
           content: `
             <div style="max-width:260px; color:#000; background:#fff; padding:10px; border-radius:8px; position:relative;">
-              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${emoji}</div>
+              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">Ghost</div>
               <div style="margin-left:50px;">
                 <b style="font-size:1.1em;">${h[0]}</b><br>
                 <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
@@ -98,58 +90,22 @@
       });
     }
 
-    // FIXED GPS Button (30s timeout, low accuracy fallback, watchPosition on fail)
+    // GPS Button (Accuracy Alert)
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
-        alert("GPS not supported in this browser. Try Chrome or Safari.");
+        alert("GPS not supported.");
         return;
       }
-
-      const options = {
-        enableHighAccuracy: false,  // False for faster network fallback (avoids GPS timeout)
-        timeout: 30000,             // 30 seconds – longer for slow signals
-        maximumAge: 60000           // Use cache up to 1 min old if fresh GPS slow
-      };
-
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        pos => {
           const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          const accuracy = pos.coords.accuracy; // In meters
+          const accuracy = Math.round(pos.coords.accuracy);
           map.setCenter(userPos);
-          map.setZoom(12);
-          alert(`Centered! Accuracy: ${Math.round(accuracy)}m`); // Shows error margin (remove later)
+          map.setZoom(14);
+          alert(`Centered! Accuracy: ${accuracy}m`);
         },
-        (error) => {
-          let msg = "GPS Error: ";
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              msg += "Permission denied. Enable in browser settings.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              msg += "Location unavailable. Check GPS/WiFi.";
-              break;
-            case error.TIMEOUT:
-              msg += "Timeout. Trying continuous mode...";
-              // Fallback to watchPosition on timeout
-              gpsWatchId = navigator.geolocation.watchPosition(
-                (pos) => {
-                  const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                  const accuracy = pos.coords.accuracy;
-                  map.setCenter(userPos);
-                  map.setZoom(12);
-                  if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);  // Stop after success
-                  alert(`Located via continuous mode! Accuracy: ${Math.round(accuracy)}m`);
-                },
-                (watchErr) => alert("Watch failed: " + watchErr.message),
-                options
-              );
-              return;  // Don't alert further on fallback
-            default:
-              msg += "Unknown error. Reload and try again.";
-          }
-          alert(msg);
-        },
-        options
+        err => alert("GPS Error: " + (err.message || "Try again")),
+        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
       );
     };
 
@@ -175,10 +131,10 @@
           arContainer.innerHTML = `
             <button id="backBtn">Back to Map</button>
             <div id="loading">Loading AR...</div>
-            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;' style='width:100%; height:100vh;'>
+            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;'>
               <a-camera gps-new-camera rotation-reader></a-camera>
-              <a-entity id="ghostEntity" visible="false" scale="5 5 5">
-                <a-text value="" align="center" color="white" font-size="0.2"></a-text>
+              <a-entity id="ghostEntity" visible="false" scale="8 8 8">
+                <a-text value="" align="center" color="lime" font-size="0.3"></a-text>
               </a-entity>
             </a-scene>
           `;
@@ -189,13 +145,7 @@
             const scene = document.querySelector('a-scene');
             if (scene && scene.components.arjs) {
               const arSystem = scene.components.arjs.system;
-              if (arSystem.arToolKitSource) {
-                arSystem.arToolKitSource.stop();
-              }
-              if (arStream) {
-                arStream.getTracks().forEach(track => track.stop());
-                arStream = null;
-              }
+              if (arSystem.arToolKitSource) arSystem.arToolKitSource.stop();
             }
             arContainer.style.display = "none";
             document.getElementById("map").style.display = "block";
@@ -216,21 +166,12 @@
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
 
-        let nearest = null;
-        let minDist = Infinity;
+        const h = haunts[0]; // Only one pin
+        const dist = getDistance(userLat, userLng, h[1], h[2]);
 
-        haunts.forEach(h => {
-          const dist = getDistance(userLat, userLng, h[1], h[2]);
-          if (dist < minDist) {
-            minDist = dist;
-            nearest = h;
-          }
-        });
-
-        if (nearest && minDist < 200) { // Increased to 200m for suburban accuracy
-          const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
-          ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
-          ghostEntity.setAttribute("gps-entity-place", `latitude: ${nearest[1]}; longitude: ${nearest[2]}`);
+        if (dist < 3000) { // 3km radius
+          ghostText.setAttribute("value", `Ghost - ${h[0]} (${Math.round(dist)}m away)`);
+          ghostEntity.setAttribute("gps-entity-place", `latitude: ${h[1]}; longitude: ${h[2]}`);
           ghostEntity.setAttribute("visible", "true");
         } else {
           ghostEntity.setAttribute("visible", "false");
