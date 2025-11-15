@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR – Test at 98 Carora Cct</title>
+  <title>Hauntly AR – 98 Carora Cct</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -37,12 +37,12 @@
 <body>
   <header>
     <h1>Hauntly AR</h1>
-    <p>Test AR at 98 Carora Cct, Clyde North</p>
+    <p>Test at 98 Carora Circuit, Clyde North</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
   <button id="arBtn">AR Mode</button>
-  <footer>Tap pins for details. Get near a haunt to see AR ghost.</footer>
+  <footer>Get near 98 Carora Cct to see AR ghost!</footer>
 
   <!-- AR Container -->
   <div id="arContainer">
@@ -54,13 +54,12 @@
   <script>
     let map, arWatcher;
     const haunts = [
-      // === YOUR TEST PIN ===
-      ["98 Carora Circuit, Clyde North", -38.1205, 145.3142, "👻", "Your test location – AR ghost appears here when in range!", "ghost"]
+      // === YOUR TEST PIN (Verified Coordinates) ===
+      ["98 Carora Circuit, Clyde North", -38.1205, 145.3142, "Ghost", "Your home – AR ghost appears when in range!", "ghost"],
 
-      // === OTHER HAUNTS (abbreviated) ===
+      // === OTHER HAUNTS (Optional – Add more if needed) ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
-      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery with over 200,000 interments.", "gravestone"],
-      // ... (add others if needed)
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery with over 200,000 interments.", "gravestone"]
     ];
 
     function initMap() {
@@ -71,7 +70,7 @@
       });
 
       haunts.forEach(h => {
-        const isCemetery = h[5] =,== "gravestone" || h[0].includes("Cemetery");
+        const isCemetery = h[5] === "gravestone" || h[0].includes("Cemetery");
         const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
         const emoji = isCemetery ? "Grave" : "Ghost";
 
@@ -99,7 +98,7 @@
       });
     }
 
-    // GPS Button (Fixed)
+    // GPS Button (High Accuracy)
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
         alert("GPS not supported.");
@@ -116,7 +115,7 @@
       );
     };
 
-    // AR Mode
+    // AR Mode (Free AR.js)
     const arBtn = document.getElementById("arBtn");
     const arContainer = document.getElementById("arContainer");
 
