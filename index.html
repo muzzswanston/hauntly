@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR – 3km Test Radius</title>
+  <title>Hauntly AR – Ghost in Camera</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -19,6 +19,9 @@
     }
   </script>
 
+  <!-- Three.js for AR Overlay -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
     body { background:#0a0a0a; color:#fff; }
@@ -31,31 +34,33 @@
     #arBtn { position:fixed; bottom:20px; right:20px; z-index:1000; }
     #backBtn { position:fixed; top:20px; left:20px; z-index:10000; }
     #loading { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10001; color:#fff; font-size:1.2em; }
+    #ghostOverlay { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:10vw; pointer-events:none; z-index:10002; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
 <body>
   <header>
     <h1>Hauntly AR</h1>
-    <p>Test 3km AR ghost at 98 Carora Cct</p>
+    <p>Test at 98 Carora Circuit, Clyde North</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
   <button id="arBtn">AR Mode</button>
-  <footer>Ghost appears within 3km of your pin!</footer>
+  <footer>Ghost appears within 3km!</footer>
 
   <!-- AR Container -->
   <div id="arContainer">
     <button id="backBtn">Back to Map</button>
     <div id="loading">Loading AR...</div>
+    <video id="cameraFeed" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+    <div id="ghostOverlay">Ghost</div>
   </div>
 
   <!-- Global initMap + AR Logic -->
   <script>
-    let map, arWatcher;
+    let map, arWatcher, stream;
     const haunts = [
-      // === YOUR CARORA PIN (3km AR Range) ===
-      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "AR ghost appears within 3km!", "ghost"]
+      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "Your home – AR ghost appears when in range!", "ghost"]
     ];
 
     function initMap() {
@@ -90,7 +95,7 @@
       });
     }
 
-    // GPS Button (Accuracy Alert)
+    // GPS Button
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
         alert("GPS not supported.");
@@ -99,82 +104,62 @@
       navigator.geolocation.getCurrentPosition(
         pos => {
           const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          const accuracy = Math.round(pos.coords.accuracy);
           map.setCenter(userPos);
           map.setZoom(14);
-          alert(`Centered! Accuracy: ${accuracy}m`);
         },
         err => alert("GPS Error: " + (err.message || "Try again")),
-        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 30000 }
       );
     };
 
     // AR Mode
     const arBtn = document.getElementById("arBtn");
     const arContainer = document.getElementById("arContainer");
+    const cameraFeed = document.getElementById("cameraFeed");
+    const ghostOverlay = document.getElementById("ghostOverlay");
 
-    arBtn.onclick = () => {
+    arBtn.onclick = async () => {
       document.getElementById("map").style.display = "none";
       arBtn.style.display = "none";
       document.getElementById("loading").style.display = "block";
 
-      const aframeScript = document.createElement('script');
-      aframeScript.src = 'https://aframe.io/releases/1.5.0/aframe.min.js';
-      document.head.appendChild(aframeScript);
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        cameraFeed.srcObject = stream;
+        cameraFeed.play();
+        arContainer.style.display = "block";
+        document.getElementById("loading").style.display = "none";
 
-      aframeScript.onload = () => {
-        const arjsScript = document.createElement('script');
-        arjsScript.src = 'https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js';
-        document.head.appendChild(arjsScript);
-
-        arjsScript.onload = () => {
-          arContainer.innerHTML = `
-            <button id="backBtn">Back to Map</button>
-            <div id="loading">Loading AR...</div>
-            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;'>
-              <a-camera gps-new-camera rotation-reader></a-camera>
-              <a-entity id="ghostEntity" visible="false" scale="8 8 8">
-                <a-text value="" align="center" color="lime" font-size="0.3"></a-text>
-              </a-entity>
-            </a-scene>
-          `;
-          arContainer.style.display = "block";
-          document.getElementById("loading").style.display = "none";
-
-          document.getElementById("backBtn").onclick = () => {
-            const scene = document.querySelector('a-scene');
-            if (scene && scene.components.arjs) {
-              const arSystem = scene.components.arjs.system;
-              if (arSystem.arToolKitSource) arSystem.arToolKitSource.stop();
-            }
-            arContainer.style.display = "none";
-            document.getElementById("map").style.display = "block";
-            arBtn.style.display = "block";
-            if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
-          };
-
-          startARGhostWatch();
+        document.getElementById("backBtn").onclick = () => {
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+          }
+          arContainer.style.display = "none";
+          document.getElementById("map").style.display = "block";
+          arBtn.style.display = "block";
+          if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
         };
-      };
+
+        startGhostWatch();
+      } catch (err) {
+        alert("Camera access denied. Allow camera to use AR.");
+      }
     };
 
-    function startARGhostWatch() {
-      const ghostEntity = document.querySelector("#ghostEntity");
-      const ghostText = ghostEntity.querySelector("a-text");
-
+    function startGhostWatch() {
       arWatcher = navigator.geolocation.watchPosition(position => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
 
-        const h = haunts[0]; // Only one pin
+        const h = haunts[0];
         const dist = getDistance(userLat, userLng, h[1], h[2]);
 
-        if (dist < 3000) { // 3km radius
-          ghostText.setAttribute("value", `Ghost - ${h[0]} (${Math.round(dist)}m away)`);
-          ghostEntity.setAttribute("gps-entity-place", `latitude: ${h[1]}; longitude: ${h[2]}`);
-          ghostEntity.setAttribute("visible", "true");
+        if (dist < 3000) {
+          ghostOverlay.style.display = "block";
+          ghostOverlay.textContent = `Ghost - ${Math.round(dist)}m away`;
         } else {
-          ghostEntity.setAttribute("visible", "false");
+          ghostOverlay.style.display = "none";
         }
       }, () => {}, { enableHighAccuracy: true });
     }
