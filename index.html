@@ -3,12 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR (Free)</title>
-
-  <!-- Free AR.js + Three.js (No Keys Needed) -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <title>Hauntly AR (Fixed)</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -39,7 +34,7 @@
 </head>
 <body>
   <header>
-    <h1>Hauntly AR (Free)</h1>
+    <h1>Hauntly AR</h1>
     <p>Interactive map + AR ghosts</p>
     <button id="gps">Center on Me</button>
   </header>
@@ -47,70 +42,168 @@
   <button id="arBtn">AR Mode</button>
   <footer>Tap pins for details. Get near a haunt to see AR ghost.</footer>
 
-  <!-- Free AR.js Camera View -->
+  <!-- AR Container (Loaded Dynamically) -->
   <div id="arContainer">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-      <a-marker-camera preset="hiro"></a-marker-camera>
-      <a-entity id="ghostEntity" visible="false" position="0 0 -1" scale="2 2 2">
-        <a-text value="👻" align="center" color="white" font-size="0.2"></a-text>
-      </a-entity>
-    </a-scene>
+    <!-- AR Scene Will Be Inserted Here -->
   </div>
 
-  <!-- Global initMap + Free AR Logic -->
+  <!-- Global initMap -->
   <script>
     let map, userMarker;
     const haunts = [
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps.", "ghost"],
-      // ... (same haunts array as before)
-    ]; // Abbreviated—use full from previous code
+      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "ghost"],
+      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "ghost"],
+      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "ghost"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "gravestone"],
+      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "gravestone"],
+      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "ghost"],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks.", "ghost"],
+      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "ghost"],
+      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "ghost"],
+      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "ghost"],
+      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "ghost"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "ghost"]
+    ];
 
     function initMap() {
-      // ... (same map code as before)
-    }
-
-    // GPS Button (same as before)
-    document.getElementById("gps").onclick = () => { /* ... */ };
-
-    // Free AR Mode (AR.js)
-    const arBtn = document.getElementById("arBtn");
-    const arContainer = document.getElementById("arContainer");
-    const ghostEntity = document.getElementById("ghostEntity");
-
-    arBtn.onclick = () => {
-      document.getElementById("map").style.display = "none";
-      arContainer.style.display = "block";
-      arBtn.style.display = "none";
-    };
-
-    // GPS Watch for AR Ghost
-    navigator.geolocation.watchPosition(position => {
-      const userLat = position.coords.latitude;
-      const userLng = position.coords.longitude;
-
-      let nearest = null;
-      let minDist = Infinity;
-
-      haunts.forEach(h => {
-        const dist = getDistance(userLat, userLng, h[1], h[2]);
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = h;
-        }
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: { lat: -25.2744, lng: 133.7751 },
+        styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
       });
 
-      if (nearest && minDist < 100) { // Within 100m
-        const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
-        ghostEntity.setAttribute("text", `value: ${emoji} - ${nearest[0]} Nearby!; align: center; color: white; font-size: 0.1`);
-        ghostEntity.setAttribute("visible", "true");
-        ghostEntity.setAttribute("position", "0 1.5 -2"); // In front of camera
-      } else {
-        ghostEntity.setAttribute("visible", "false");
-      }
-    }, () => alert("GPS denied"), { enableHighAccuracy: true });
+      haunts.forEach(h => {
+        const marker = new google.maps.Marker({
+          position: { lat: h[1], lng: h[2] },
+          map: map,
+          title: h[0],
+          icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+        });
 
-    // Haversine distance (same as before)
-    function getDistance(lat1, lon1, lat2, lon2) { /* ... */ }
+        const emoji = h[5] === "gravestone" ? "🪦" : "👻";
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="max-width:260px; color:#000; background:#fff; padding:10px; border-radius:8px; position:relative;">
+              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${emoji}</div>
+              <div style="margin-left:50px;">
+                <b style="font-size:1.1em;">${h[0]}</b><br>
+                <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
+                <p style="margin:4px 0; font-size:0.8em; font-style:italic; color:#555;">${h[4]}</p>
+              </div>
+            </div>
+          `
+        });
+
+        marker.addListener("click", () => {
+          infoWindow.open(map, marker);
+        });
+      });
+    }
+
+    // GPS Button
+    document.getElementById("gps").onclick = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            map.setCenter(userPos);
+            map.setZoom(16);
+            if (!userMarker) {
+              userMarker = new google.maps.Marker({
+                position: userPos,
+                map: map,
+                icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+              });
+            } else {
+              userMarker.setPosition(userPos);
+            }
+          },
+          () => alert("GPS access denied")
+        );
+      } else {
+        alert("GPS not supported");
+      }
+    };
+
+    // AR Mode Button (Dynamic Load)
+    const arBtn = document.getElementById("arBtn");
+    const arContainer = document.getElementById("arContainer");
+
+    arBtn.onclick = () => {
+      // Hide map
+      document.getElementById("map").style.display = "none";
+      arBtn.style.display = "none";
+
+      // Load AR.js scripts dynamically (prevents auto-camera)
+      const aframeScript = document.createElement('script');
+      aframeScript.src = 'https://aframe.io/releases/1.5.0/aframe.min.js';
+      document.head.appendChild(aframeScript);
+
+      aframeScript.onload = () => {
+        const arjsScript = document.createElement('script');
+        arjsScript.src = 'https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js';
+        document.head.appendChild(arjsScript);
+
+        arjsScript.onload = () => {
+          // Now create AR scene
+          arContainer.innerHTML = `
+            <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;' style='width:100%; height:100%;'>
+              <a-camera gps-camera rotation-reader></a-camera>
+              <a-entity id="ghostEntity" visible="false" position="0 1.5 -2" scale="2 2 2">
+                <a-text value="" align="center" color="white" font-size="0.1"></a-text>
+              </a-entity>
+            </a-scene>
+          `;
+          arContainer.style.display = "block";
+
+          // Start GPS watch for AR ghosts
+          startARGhostWatch();
+        };
+      };
+    };
+
+    function startARGhostWatch() {
+      const ghostEntity = document.getElementById("ghostEntity");
+      const ghostText = ghostEntity.querySelector("a-text");
+
+      navigator.geolocation.watchPosition(position => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        let nearest = null;
+        let minDist = Infinity;
+
+        haunts.forEach(h => {
+          const dist = getDistance(userLat, userLng, h[1], h[2]);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = h;
+          }
+        });
+
+        if (nearest && minDist < 100) { // Within 100m
+          const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
+          ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
+          ghostEntity.setAttribute("gps-entity-place", `latitude: ${nearest[1]}; longitude: ${nearest[2]}`);
+          ghostEntity.setAttribute("visible", "true");
+        } else {
+          ghostEntity.setAttribute("visible", "false");
+        }
+      }, () => alert("GPS denied"), { enableHighAccuracy: true });
+    }
+
+    // Haversine distance
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
   </script>
 </body>
 </html>
