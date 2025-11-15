@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Victoria Cemeteries</title>
+  <title>Hauntly AR – Test at 98 Carora Cct</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -24,78 +24,56 @@
     body { background:#0a0a0a; color:#fff; }
     header { background:#1a1a2e; padding:1rem; text-align:center; }
     h1 { font-size:1.4rem; margin:0; }
-    #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
+    #gps, #arBtn, #backBtn { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin:0.5rem; cursor:pointer; }
     #map { height:80vh; width:100%; }
     footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
+    #arContainer { display:none; width:100%; height:100vh; position:fixed; top:0; left:0; z-index:9999; background:#000; }
+    #arBtn { position:fixed; bottom:20px; right:20px; z-index:1000; }
+    #backBtn { position:fixed; top:20px; left:20px; z-index:10000; }
+    #loading { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10001; color:#fff; font-size:1.2em; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
 <body>
   <header>
-    <h1>Hauntly</h1>
-    <p>Haunted locations + 25 Victoria cemeteries within 100km of Melbourne</p>
+    <h1>Hauntly AR</h1>
+    <p>Test AR at 98 Carora Cct, Clyde North</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
-  <footer>Tap pins for details. <a href="#" style="color:#00ff9d">Add yours?</a></footer>
+  <button id="arBtn">AR Mode</button>
+  <footer>Tap pins for details. Get near a haunt to see AR ghost.</footer>
 
-  <!-- Global initMap -->
+  <!-- AR Container -->
+  <div id="arContainer">
+    <button id="backBtn">Back to Map</button>
+    <div id="loading">Loading AR...</div>
+  </div>
+
+  <!-- Global initMap + AR Logic -->
   <script>
-    let map;
+    let map, arWatcher;
     const haunts = [
-      // === ORIGINAL HAUNTS ===
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "ghost"],
-      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "ghost"],
-      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "ghost"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "gravestone"],
-      ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "gravestone"],
-      ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "ghost"],
-      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors' spirits pacing the docks.", "ghost"],
-      ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "ghost"],
-      ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "ghost"],
-      ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "ghost"],
-      ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "ghost"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "ghost"],
+      // === YOUR TEST PIN ===
+      ["98 Carora Circuit, Clyde North", -38.1000, 145.3333, "Ghost", "Your test location – AR ghost appears here when in range!", "ghost"],
 
-      // === 25 VERIFIED VICTORIA CEMETERIES ===
-      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
-      ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855, with heritage-listed monuments.", "gravestone"],
-      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856, where pines cast eternal shadows.", "gravestone"],
-      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "🪦", "Opened 1880 as Victoria's first crematorium, blending ashes with gardens.", "gravestone"],
-      ["Preston Cemetery", -37.7333, 145.0000, "🪦", "Founded 1864 for northern suburbs, expanded in 1920s amid Melbourne's suburban boom.", "gravestone"],
-      ["Heidelberg Cemetery", -37.7667, 145.0333, "🪦", "Established 1856, home to Yarra Valley pioneers and whispers from the gold rush era.", "gravestone"],
-      ["Boroondara General Cemetery", -37.8037, 145.0412, "🪦", "Opened 1858 in Hawthorn, resting place for artists and politicians under ancient oaks.", "gravestone"],
-      ["Brighton General Cemetery", -37.9013, 145.0207, "🪦", "Laid out 1854 by Robert Hoddle, now a bayside haven for 40,000 souls and VC heroes.", "gravestone"],
-      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments and 50+ themed gardens.", "gravestone"],
-      ["Bunurong Memorial Park", -38.0648, 145.2004, "🪦", "Opened 1994 near Dandenong, modern sanctuary for southern suburbs' departed.", "gravestone"],
-      ["Berwick Cemetery", -38.0333, 145.3500, "🪦", "Rural burial ground since 1861, echoing with tales from Casey shire's farming ghosts.", "gravestone"],
-      ["Box Hill Cemetery", -37.8167, 145.1200, "🪦", "Historic site in Whitehorse, interring eastern Melbourne families since the 1860s.", "gravestone"],
-      ["Templestowe Cemetery", -37.7595, 145.1417, "🪦", "Established 1860, quiet haven for Manningham pioneers amid suburban sprawl.", "gravestone"],
-      ["Eltham Cemetery", -37.7266, 145.1503, "🪦", "Opened 1861 in Nillumbik, surrounded by bushland where artists' spirits linger.", "gravestone"],
-      ["Warrandyte Cemetery", -37.7333, 145.2000, "🪦", "Riverside graves since 1850s, haunted by gold miners along the Yarra.", "gravestone"],
-      ["Lilydale Memorial Park", -37.7352, 145.3425, "🪦", "Yarra Ranges site since 1862, blending lawns with echoes of rural Victoria.", "gravestone"],
-      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "🪦", "Companion to Memorial Park, opened 1960s for modern interments in the hills.", "gravestone"],
-      ["Yarra Glen Cemetery", -37.6500, 145.3833, "🪦", "Small 1860s plot in Yarra Valley, where winemakers' ghosts toast eternally.", "gravestone"],
-      ["Healesville Cemetery", -37.6610, 145.5281, "🪦", "Bushland burial ground since 1865, near sanctuary where animals and souls coexist.", "gravestone"],
-      ["Woori Yallock Cemetery", -37.7833, 145.5000, "🪦", "Rural site from 1880s, shadowed by Yarra Ranges' misty mornings.", "gravestone"],
-      ["Cranbourne Cemetery", -38.1000, 145.0167, "🪦", "Near Cranbourne, opened 1880s for southeast farmers' final rest.", "gravestone"],
-      ["Frankston Memorial Park", -38.1500, 145.1333, "🪦", "Coastal cemetery since 1960s, waves crashing near 50,000 graves.", "gravestone"],
-      ["Geelong Memorial Park", -38.1500, 144.3833, "🪦", "75km west of CBD, established 1855 as Victoria's second-largest necropolis.", "gravestone"],
-      ["Torquay Cemetery", -38.3167, 144.3167, "🪦", "Bayside site since 1860s, haunted by shipwreck sailors from Bass Strait.", "gravestone"],
-      ["Barwon Heads Cemetery", -38.2833, 144.4833, "🪦", "Seaside graves from 1870s, where ocean winds carry whispers of the lost.", "gravestone"]
+      // === OTHER HAUNTS (abbreviated) ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery with over 200,000 interments.", "gravestone"],
+      // ... (add others if needed)
     ];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
-        center: { lat: -37.8136, lng: 144.9631 }, // Melbourne CBD
+        center: { lat: -37.8136, lng: 144.9631 },
         styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
       });
 
       haunts.forEach(h => {
-        const isCemetery = h[5] === "gravestone" || h[0].toLowerCase().includes("cemetery");
+        const isCemetery = h[5] === "gravestone" || h[0].includes("Cemetery");
         const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-        const emoji = isCemetery ? "🪦" : "👻";
+        const emoji = isCemetery ? "Grave" : "Ghost";
 
         const marker = new google.maps.Marker({
           position: { lat: h[1], lng: h[2] },
@@ -117,52 +95,110 @@
           `
         });
 
-        marker.addListener("click", () => {
-          infoWindow.open(map, marker);
-        });
+        marker.addListener("click", () => infoWindow.open(map, marker));
       });
     }
 
-    // FIXED GPS Button (with options & better error handling)
+    // GPS Button (Fixed)
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
-        alert("GPS not supported in this browser. Try Chrome or Safari.");
+        alert("GPS not supported.");
         return;
       }
-
-      const options = {
-        enableHighAccuracy: true,  // Use GPS for accuracy
-        timeout: 10000,            // 10s timeout
-        maximumAge: 0              // Fresh location only
-      };
-
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        pos => {
           const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           map.setCenter(userPos);
-          map.setZoom(12);
-          alert(`Centered on you! (Lat: ${userPos.lat.toFixed(4)}, Lng: ${userPos.lng.toFixed(4)})`); // Debug alert (remove later)
+          map.setZoom(16);
         },
-        (error) => {
-          let msg = "GPS Error: ";
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              msg += "Permission denied. Check Settings > Privacy > Location Services.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              msg += "Location unavailable. Ensure GPS is on.";
-              break;
-            case error.TIMEOUT:
-              msg += "Timeout—try again or check signal.";
-              break;
-            default:
-              msg += "Unknown error.";
-          }
-          alert(msg);
-        },
-        options
+        err => alert("GPS Error: " + (err.message || "Try again")),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     };
+
+    // AR Mode
+    const arBtn = document.getElementById("arBtn");
+    const arContainer = document.getElementById("arContainer");
+
+    arBtn.onclick = () => {
+      document.getElementById("map").style.display = "none";
+      arBtn.style.display = "none";
+      document.getElementById("loading").style.display = "block";
+
+      const aframeScript = document.createElement('script');
+      aframeScript.src = 'https://aframe.io/releases/1.5.0/aframe.min.js';
+      document.head.appendChild(aframeScript);
+
+      aframeScript.onload = () => {
+        const arjsScript = document.createElement('script');
+        arjsScript.src = 'https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js';
+        document.head.appendChild(arjsScript);
+
+        arjsScript.onload = () => {
+          arContainer.innerHTML = `
+            <button id="backBtn">Back to Map</button>
+            <div id="loading">Loading AR...</div>
+            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;'>
+              <a-entity camera></a-entity>
+              <a-entity id="ghostEntity" visible="false" position="0 1.5 -2" scale="2 2 2">
+                <a-text value="" align="center" color="white" font-size="0.1"></a-text>
+              </a-entity>
+            </a-scene>
+          `;
+          arContainer.style.display = "block";
+          document.getElementById("loading").style.display = "none";
+
+          document.getElementById("backBtn").onclick = () => {
+            arContainer.style.display = "none";
+            document.getElementById("map").style.display = "block";
+            arBtn.style.display = "block";
+            if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
+          };
+
+          startARGhostWatch();
+        };
+      };
+    };
+
+    function startARGhostWatch() {
+      const ghostEntity = document.querySelector("#ghostEntity");
+      const ghostText = ghostEntity.querySelector("a-text");
+
+      arWatcher = navigator.geolocation.watchPosition(position => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        let nearest = null;
+        let minDist = Infinity;
+
+        haunts.forEach(h => {
+          const dist = getDistance(userLat, userLng, h[1], h[2]);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = h;
+          }
+        });
+
+        if (nearest && minDist < 100) {
+          const emoji = nearest[5] === "gravestone" ? "Grave" : "Ghost";
+          ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
+          ghostEntity.setAttribute("visible", "true");
+        } else {
+          ghostEntity.setAttribute("visible", "false");
+        }
+      }, () => {}, { enableHighAccuracy: true });
+    }
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
   </script>
 </body>
 </html>
