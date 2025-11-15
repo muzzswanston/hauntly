@@ -52,7 +52,7 @@
 
   <!-- Global initMap + AR Logic -->
   <script>
-    let map, arWatcher, arStream;
+    let map, arWatcher;
     const haunts = [
       // === YOUR UPDATED CARORA PIN ===
       ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "👻", "Your home – AR ghost appears when in range!", "ghost"],
@@ -98,20 +98,58 @@
       });
     }
 
-    // GPS Button (Fixed Timeout)
+    // FIXED GPS Button (30s timeout, low accuracy fallback, watchPosition on fail)
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
-        alert("GPS not supported.");
+        alert("GPS not supported in this browser. Try Chrome or Safari.");
         return;
       }
+
+      const options = {
+        enableHighAccuracy: false,  // False for faster network fallback (avoids GPS timeout)
+        timeout: 30000,             // 30 seconds – longer for slow signals
+        maximumAge: 60000           // Use cache up to 1 min old if fresh GPS slow
+      };
+
       navigator.geolocation.getCurrentPosition(
-        pos => {
+        (pos) => {
           const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          const accuracy = pos.coords.accuracy; // In meters
           map.setCenter(userPos);
-          map.setZoom(16);
+          map.setZoom(12);
+          alert(`Centered! Accuracy: ${Math.round(accuracy)}m`); // Shows error margin (remove later)
         },
-        err => alert("GPS Error: " + (err.message || "Try again")),
-        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+        (error) => {
+          let msg = "GPS Error: ";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              msg += "Permission denied. Enable in browser settings.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              msg += "Location unavailable. Check GPS/WiFi.";
+              break;
+            case error.TIMEOUT:
+              msg += "Timeout. Trying continuous mode...";
+              // Fallback to watchPosition on timeout
+              gpsWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                  const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                  const accuracy = pos.coords.accuracy;
+                  map.setCenter(userPos);
+                  map.setZoom(12);
+                  if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);  // Stop after success
+                  alert(`Located via continuous mode! Accuracy: ${Math.round(accuracy)}m`);
+                },
+                (watchErr) => alert("Watch failed: " + watchErr.message),
+                options
+              );
+              return;  // Don't alert further on fallback
+            default:
+              msg += "Unknown error. Reload and try again.";
+          }
+          alert(msg);
+        },
+        options
       );
     };
 
@@ -147,28 +185,22 @@
           arContainer.style.display = "block";
           document.getElementById("loading").style.display = "none";
 
-          // FIXED Back Button (Stop Camera Stream)
           document.getElementById("backBtn").onclick = () => {
             const scene = document.querySelector('a-scene');
             if (scene && scene.components.arjs) {
               const arSystem = scene.components.arjs.system;
               if (arSystem.arToolKitSource) {
-                arSystem.arToolKitSource.stop();  // Stop AR tracking
+                arSystem.arToolKitSource.stop();
               }
               if (arStream) {
-                arStream.getTracks().forEach(track => track.stop());  // Kill camera tracks
+                arStream.getTracks().forEach(track => track.stop());
                 arStream = null;
               }
             }
             arContainer.style.display = "none";
             document.getElementById("map").style.display = "block";
             arBtn.style.display = "block";
-            if (arWatcher) {
-              navigator.geolocation.clearWatch(arWatcher);
-              arWatcher = null;
-            }
-            // Clean scene
-            if (scene) scene.parentNode.removeChild(scene);
+            if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
           };
 
           startARGhostWatch();
@@ -195,7 +227,7 @@
           }
         });
 
-        if (nearest && minDist < 100) {
+        if (nearest && minDist < 200) { // Increased to 200m for suburban accuracy
           const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
           ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
           ghostEntity.setAttribute("gps-entity-place", `latitude: ${nearest[1]}; longitude: ${nearest[2]}`);
