@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR</title>
+  <title>Hauntly AR (Fixed)</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -30,6 +30,7 @@
     #arContainer { display:none; width:100%; height:100vh; position:fixed; top:0; left:0; z-index:9999; background:#000; }
     #arBtn { position:fixed; bottom:20px; right:20px; z-index:1000; }
     #backBtn { position:fixed; top:20px; left:20px; z-index:10000; }
+    #loading { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10001; color:#fff; font-size:1.2em; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
@@ -43,9 +44,10 @@
   <button id="arBtn">AR Mode</button>
   <footer>Tap pins for details. Get near a haunt to see AR ghost.</footer>
 
-  <!-- AR Container (Loaded Dynamically) -->
+  <!-- AR Container -->
   <div id="arContainer">
     <button id="backBtn">Back to Map</button>
+    <div id="loading">Loading AR...</div>
     <!-- AR Scene Inserted Here -->
   </div>
 
@@ -82,7 +84,7 @@
           icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
 
-        const emoji = h[5] === "gravestone" ? "Grave" : "Ghost";
+        const emoji = h[5] === "gravestone" ? "🪦" : "👻";
 
         const infoWindow = new google.maps.InfoWindow({
           content: `
@@ -133,36 +135,49 @@
     arBtn.onclick = () => {
       document.getElementById("map").style.display = "none";
       arBtn.style.display = "none";
+      document.getElementById("loading").style.display = "block";
 
-      // Load AR.js dynamically
+      // Load A-Frame
       const aframeScript = document.createElement('script');
       aframeScript.src = 'https://aframe.io/releases/1.5.0/aframe.min.js';
       document.head.appendChild(aframeScript);
 
       aframeScript.onload = () => {
+        // Load AR.js
         const arjsScript = document.createElement('script');
         arjsScript.src = 'https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js';
         document.head.appendChild(arjsScript);
 
         arjsScript.onload = () => {
+          // Insert AR scene (with static camera for reliable feed)
           arContainer.innerHTML = `
             <button id="backBtn">Back to Map</button>
-            <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;'>
-              <a-camera gps-camera rotation-reader></a-camera>
+            <div id="loading">Loading AR...</div>
+            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;' style='width:100%; height:100vh;'>
+              <a-entity camera></a-entity>
               <a-entity id="ghostEntity" visible="false" position="0 1.5 -2" scale="2 2 2">
                 <a-text value="" align="center" color="white" font-size="0.1"></a-text>
               </a-entity>
             </a-scene>
           `;
           arContainer.style.display = "block";
+          document.getElementById("loading").style.display = "none";
 
-          // Re-attach Back button
+          // Re-attach Back button with cleanup
           document.getElementById("backBtn").onclick = () => {
             arContainer.style.display = "none";
             document.getElementById("map").style.display = "block";
             arBtn.style.display = "block";
-            arContainer.innerHTML = '<button id="backBtn">Back to Map</button>';
-            if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
+            if (arWatcher) {
+              navigator.geolocation.clearWatch(arWatcher);
+              arWatcher = null;
+            }
+            // Clean AR scene
+            const scene = document.querySelector('a-scene');
+            if (scene) scene.parentNode.removeChild(scene);
+            // Remove scripts to prevent hangs
+            const scripts = document.querySelectorAll('script[src*="aframe"], script[src*="AR.js"]');
+            scripts.forEach(s => s.remove());
           };
 
           startARGhostWatch();
@@ -172,6 +187,7 @@
 
     function startARGhostWatch() {
       const ghostEntity = document.querySelector("#ghostEntity");
+      if (!ghostEntity) return;
       const ghostText = ghostEntity.querySelector("a-text");
 
       arWatcher = navigator.geolocation.watchPosition(position => {
@@ -190,7 +206,7 @@
         });
 
         if (nearest && minDist < 100) {
-          const emoji = nearest[5] === "gravestone" ? "Grave" : "Ghost";
+          const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
           ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
           ghostEntity.setAttribute("visible", "true");
         } else {
