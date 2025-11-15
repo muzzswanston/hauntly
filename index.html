@@ -50,14 +50,14 @@
       ["Toowong Cemetery", -27.4750, 152.9786, "Original haunted cemetery.", "Graves whisper secrets; apparitions seen among the headstones.", "gravestone"],
       ["South Brisbane Cemetery", -27.5000, 153.0300, "Spirits in Dutton Park.", "Victorian-era graves with cold spots and fleeting shadows.", "gravestone"],
       ["St Helena Island", -27.3700, 153.4300, "Prison island of dark secrets.", "Abandoned cells where screams echo and chains rattle in silence.", "ghost"],
-      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors’ spirits pacing the docks.", "ghost"],
+      ["Old Williamstown", -37.8670, 144.9000, "Ghosts of old city.", "Maritime town with sailors' spirits pacing the docks.", "ghost"],
       ["Hidden Melbourne", -37.8136, 144.9631, "Murder & mystery alleys.", "Dark laneways where victims of unsolved crimes linger.", "ghost"],
       ["Altona Homestead", -37.8650, 144.8300, "Spirits of the Past.", "Old homestead with ghostly children playing in the garden.", "ghost"],
       ["J Ward Asylum", -37.0600, 142.5200, "Infamous haunted asylum.", "Criminally insane ward with howling echoes and locked doors that open alone.", "ghost"],
       ["Old Adelaide Gaol", -34.9170, 138.6020, "Ghost crimes & executions.", "Gallows where hanged men return to walk the corridors.", "ghost"],
       ["Hobart Penitentiary", -42.8800, 147.3300, "Colonial ghosts.", "Stone cells holding convicts who never left.", "ghost"],
 
-      // === 25 VERIFIED VICTORIA CEMETERIES (within 100km of Melbourne CBD) ===
+      // === 25 VERIFIED VICTORIA CEMETERIES ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
       ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855, with heritage-listed monuments.", "gravestone"],
       ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856, where pines cast eternal shadows.", "gravestone"],
@@ -95,7 +95,7 @@
       haunts.forEach(h => {
         const isCemetery = h[5] === "gravestone" || h[0].toLowerCase().includes("cemetery");
         const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
-        const emoji = isCemetery ? "Grave" : "Ghost";
+        const emoji = isCemetery ? "🪦" : "👻";
 
         const marker = new google.maps.Marker({
           position: { lat: h[1], lng: h[2] },
@@ -123,20 +123,45 @@
       });
     }
 
-    // GPS Button
+    // FIXED GPS Button (with options & better error handling)
     document.getElementById("gps").onclick = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            map.setCenter(userPos);
-            map.setZoom(12);
-          },
-          () => alert("GPS access denied")
-        );
-      } else {
-        alert("GPS not supported");
+      if (!navigator.geolocation) {
+        alert("GPS not supported in this browser. Try Chrome or Safari.");
+        return;
       }
+
+      const options = {
+        enableHighAccuracy: true,  // Use GPS for accuracy
+        timeout: 10000,            // 10s timeout
+        maximumAge: 0              // Fresh location only
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          map.setCenter(userPos);
+          map.setZoom(12);
+          alert(`Centered on you! (Lat: ${userPos.lat.toFixed(4)}, Lng: ${userPos.lng.toFixed(4)})`); // Debug alert (remove later)
+        },
+        (error) => {
+          let msg = "GPS Error: ";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              msg += "Permission denied. Check Settings > Privacy > Location Services.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              msg += "Location unavailable. Ensure GPS is on.";
+              break;
+            case error.TIMEOUT:
+              msg += "Timeout—try again or check signal.";
+              break;
+            default:
+              msg += "Unknown error.";
+          }
+          alert(msg);
+        },
+        options
+      );
     };
   </script>
 </body>
