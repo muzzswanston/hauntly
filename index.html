@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR (Fixed)</title>
+  <title>Hauntly AR</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -24,11 +24,12 @@
     body { background:#0a0a0a; color:#fff; }
     header { background:#1a1a2e; padding:1rem; text-align:center; }
     h1 { font-size:1.4rem; margin:0; }
-    #gps, #arBtn { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin:0.5rem; cursor:pointer; }
+    #gps, #arBtn, #backBtn { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin:0.5rem; cursor:pointer; }
     #map { height:80vh; width:100%; }
     footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
-    #arContainer { display:none; width:100%; height:100vh; position:fixed; top:0; left:0; z-index:9999; }
+    #arContainer { display:none; width:100%; height:100vh; position:fixed; top:0; left:0; z-index:9999; background:#000; }
     #arBtn { position:fixed; bottom:20px; right:20px; z-index:1000; }
+    #backBtn { position:fixed; top:20px; left:20px; z-index:10000; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
@@ -44,12 +45,13 @@
 
   <!-- AR Container (Loaded Dynamically) -->
   <div id="arContainer">
-    <!-- AR Scene Will Be Inserted Here -->
+    <button id="backBtn">Back to Map</button>
+    <!-- AR Scene Inserted Here -->
   </div>
 
   <!-- Global initMap -->
   <script>
-    let map, userMarker;
+    let map, userMarker, arScene, arWatcher;
     const haunts = [
       ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "ghost"],
       ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "ghost"],
@@ -80,7 +82,7 @@
           icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
 
-        const emoji = h[5] === "gravestone" ? "🪦" : "👻";
+        const emoji = h[5] === "gravestone" ? "Grave" : "Ghost";
 
         const infoWindow = new google.maps.InfoWindow({
           content: `
@@ -121,21 +123,18 @@
           },
           () => alert("GPS access denied")
         );
-      } else {
-        alert("GPS not supported");
       }
     };
 
-    // AR Mode Button (Dynamic Load)
+    // AR Mode Button
     const arBtn = document.getElementById("arBtn");
     const arContainer = document.getElementById("arContainer");
 
     arBtn.onclick = () => {
-      // Hide map
       document.getElementById("map").style.display = "none";
       arBtn.style.display = "none";
 
-      // Load AR.js scripts dynamically (prevents auto-camera)
+      // Load AR.js dynamically
       const aframeScript = document.createElement('script');
       aframeScript.src = 'https://aframe.io/releases/1.5.0/aframe.min.js';
       document.head.appendChild(aframeScript);
@@ -146,9 +145,9 @@
         document.head.appendChild(arjsScript);
 
         arjsScript.onload = () => {
-          // Now create AR scene
           arContainer.innerHTML = `
-            <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;' style='width:100%; height:100%;'>
+            <button id="backBtn">Back to Map</button>
+            <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;'>
               <a-camera gps-camera rotation-reader></a-camera>
               <a-entity id="ghostEntity" visible="false" position="0 1.5 -2" scale="2 2 2">
                 <a-text value="" align="center" color="white" font-size="0.1"></a-text>
@@ -157,17 +156,25 @@
           `;
           arContainer.style.display = "block";
 
-          // Start GPS watch for AR ghosts
+          // Re-attach Back button
+          document.getElementById("backBtn").onclick = () => {
+            arContainer.style.display = "none";
+            document.getElementById("map").style.display = "block";
+            arBtn.style.display = "block";
+            arContainer.innerHTML = '<button id="backBtn">Back to Map</button>';
+            if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
+          };
+
           startARGhostWatch();
         };
       };
     };
 
     function startARGhostWatch() {
-      const ghostEntity = document.getElementById("ghostEntity");
+      const ghostEntity = document.querySelector("#ghostEntity");
       const ghostText = ghostEntity.querySelector("a-text");
 
-      navigator.geolocation.watchPosition(position => {
+      arWatcher = navigator.geolocation.watchPosition(position => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
 
@@ -182,10 +189,9 @@
           }
         });
 
-        if (nearest && minDist < 100) { // Within 100m
-          const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
+        if (nearest && minDist < 100) {
+          const emoji = nearest[5] === "gravestone" ? "Grave" : "Ghost";
           ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
-          ghostEntity.setAttribute("gps-entity-place", `latitude: ${nearest[1]}; longitude: ${nearest[2]}`);
           ghostEntity.setAttribute("visible", "true");
         } else {
           ghostEntity.setAttribute("visible", "false");
