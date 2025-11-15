@@ -55,7 +55,7 @@
     let map, arWatcher;
     const haunts = [
       // === YOUR TEST PIN ===
-      ["98 Carora Circuit, Clyde North", -38.1000, 145.3333, "Ghost", "Your test location – AR ghost appears here when in range!", "ghost"],
+      ["98 Carora Circuit, Clyde North", -38.1205, 145.3142, "👻", "Your test location – AR ghost appears here when in range!", "ghost"]
 
       // === OTHER HAUNTS (abbreviated) ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
@@ -71,7 +71,7 @@
       });
 
       haunts.forEach(h => {
-        const isCemetery = h[5] === "gravestone" || h[0].includes("Cemetery");
+        const isCemetery = h[5] =,== "gravestone" || h[0].includes("Cemetery");
         const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
         const emoji = isCemetery ? "Grave" : "Ghost";
 
