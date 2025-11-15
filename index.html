@@ -52,31 +52,25 @@
 
   <!-- Global initMap + AR Logic -->
   <script>
-    let map, arWatcher;
+    let map, arWatcher, arStream;
     const haunts = [
       // === YOUR UPDATED CARORA PIN ===
-      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "Your home – AR ghost appears when in range!", "ghost"],
+      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "👻", "Your home – AR ghost appears when in range!", "ghost"],
 
-      // === ORIGINAL HAUNTS (abbreviated) ===
-      ["The Rocks", -33.8590, 151.2093, "Cobblestone streets echo with restless souls.", "Historic harbor district with ghostly footsteps and spectral figures in doorways.", "ghost"],
-      ["Q Station", -33.8000, 151.2167, "Ghostly quarantine station.", "Former isolation site where phantom patients wander the halls at night.", "ghost"],
-      ["Blue Mountains", -33.7083, 150.3122, "Eerie mountain haunts.", "Misty peaks hiding shadowy figures and unexplained lights.", "ghost"],
-
-      // === VICTORIA CEMETERIES (abbreviated – full 25 verified) ===
-      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
-      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments and 50+ themed gardens.", "gravestone"],
-      // ... (insert full cemeteries from previous code if needed)
+      // === SAMPLE HAUNTS ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments.", "gravestone"]
     ];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
-        center: { lat: -38.105609, lng: 145.363497 }, // Centered on your Carora pin
+        center: { lat: -38.105609, lng: 145.363497 }, // Centered on Carora
         styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
       });
 
       haunts.forEach(h => {
-        const isCemetery = h[5] === "gravestone" || h[0].toLowerCase().includes("cemetery");
+        const isCemetery = h[5] === "gravestone" || h[0].includes("Cemetery");
         const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
         const emoji = isCemetery ? "🪦" : "👻";
 
@@ -100,9 +94,7 @@
           `
         });
 
-        marker.addListener("click", () => {
-          infoWindow.open(map, marker);
-        });
+        marker.addListener("click", () => infoWindow.open(map, marker));
       });
     }
 
@@ -145,21 +137,38 @@
           arContainer.innerHTML = `
             <button id="backBtn">Back to Map</button>
             <div id="loading">Loading AR...</div>
-            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;'>
-              <a-entity camera></a-entity>
-              <a-entity id="ghostEntity" visible="false" position="0 1.5 -2" scale="2 2 2">
-                <a-text value="" align="center" color="white" font-size="0.1"></a-text>
+            <a-scene embedded arjs='sourceType: webcam; videoTexture: true; debugUIEnabled: false;' style='width:100%; height:100vh;'>
+              <a-camera gps-new-camera rotation-reader></a-camera>
+              <a-entity id="ghostEntity" visible="false" scale="5 5 5">
+                <a-text value="" align="center" color="white" font-size="0.2"></a-text>
               </a-entity>
             </a-scene>
           `;
           arContainer.style.display = "block";
           document.getElementById("loading").style.display = "none";
 
+          // FIXED Back Button (Stop Camera Stream)
           document.getElementById("backBtn").onclick = () => {
+            const scene = document.querySelector('a-scene');
+            if (scene && scene.components.arjs) {
+              const arSystem = scene.components.arjs.system;
+              if (arSystem.arToolKitSource) {
+                arSystem.arToolKitSource.stop();  // Stop AR tracking
+              }
+              if (arStream) {
+                arStream.getTracks().forEach(track => track.stop());  // Kill camera tracks
+                arStream = null;
+              }
+            }
             arContainer.style.display = "none";
             document.getElementById("map").style.display = "block";
             arBtn.style.display = "block";
-            if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
+            if (arWatcher) {
+              navigator.geolocation.clearWatch(arWatcher);
+              arWatcher = null;
+            }
+            // Clean scene
+            if (scene) scene.parentNode.removeChild(scene);
           };
 
           startARGhostWatch();
@@ -189,6 +198,7 @@
         if (nearest && minDist < 100) {
           const emoji = nearest[5] === "gravestone" ? "🪦" : "👻";
           ghostText.setAttribute("value", `${emoji} - ${nearest[0]} Nearby!`);
+          ghostEntity.setAttribute("gps-entity-place", `latitude: ${nearest[1]}; longitude: ${nearest[2]}`);
           ghostEntity.setAttribute("visible", "true");
         } else {
           ghostEntity.setAttribute("visible", "false");
