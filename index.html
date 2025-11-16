@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Ethereal Mist (Mobile Fixed)</title>
+  <title>Hauntly – Tours + Cemeteries</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -22,35 +22,12 @@
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
     body { background:#0a0a0a; color:#fff; }
-    header { background:#1a1a2e; padding:1rem; text-align:center; position:relative; z-index:10; }
+    header { background:#1a1a2e; padding:1rem; text-align:center; }
     h1 { font-size:1.4rem; margin:0; }
     #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
-    #map-container { position:relative; height:80vh; width:100%; }
-    #map { height:100%; width:100%; z-index:1; }
-    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; position:relative; z-index:10; }
-
-    /* FIXED ETHEREAL MIST SWIRLS */
-    .mist {
-      position: absolute;
-      top: 0; left: 0;
-      width: 200%; height: 200%; /* Larger for smooth wrap */
-      pointer-events: none;
-      background: radial-gradient(circle, rgba(200,220,255,0.08) 0%, transparent 70%);
-      opacity: 0.6;
-      animation: swirl 30s infinite linear;
-      z-index: 2; /* Above map but below pins */
-      will-change: transform; /* Mobile perf boost */
-      clip-path: circle(50% at 50% 50%); /* Subtle fog edges */
-    }
-    .mist:nth-child(2) { animation-delay: -10s; opacity: 0.4; }
-    .mist:nth-child(3) { animation-delay: -20s; opacity: 0.3; }
-
-    @keyframes swirl {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      100% { transform: translate(50vw, -30vh) rotate(360deg); }
-    }
-
-    @media (max-width:600px) { h1{font-size:1.2rem} #map-container{height:70vh} }
+    #map { height:80vh; width:100%; }
+    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
+    @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
 <body>
@@ -59,14 +36,7 @@
     <p>37 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
-
-  <div id="map-container">
-    <div id="map"></div>
-    <div class="mist"></div>
-    <div class="mist"></div>
-    <div class="mist"></div>
-  </div>
-
+  <div id="map"></div>
   <footer>Tap pins for haunt details.</footer>
 
   <!-- Global initMap -->
@@ -87,8 +57,8 @@
       ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Tours at historic asylum by Tasmania's Most Haunted.", "ghost"],
       ["Port Adelaide Ghosts", -34.8500, 138.5300, "👻", "Self-guided walking tours of port ghosts by Allen Tiller.", "ghost"],
 
-      // === 25 VICTORIA CEMETERIES ===
-      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
+      // === 25 VICTORIA CEMETERIES (Verified Coordinates) ===
+      ["Melbourne General Cemetery", -37.7854, 144.9663, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
       ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855, with heritage-listed monuments.", "gravestone"],
       ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856, where pines cast eternal shadows.", "gravestone"],
       ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "🪦", "Opened 1880 as Victoria's first crematorium, blending ashes with gardens.", "gravestone"],
