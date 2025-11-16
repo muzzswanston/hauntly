@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – GhostTourBookings + Victoria Cemeteries</title>
+  <title>Hauntly – Ethereal Mist</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -21,41 +21,72 @@
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
-    body { background:#0a0a0a; color:#fff; }
-    header { background:#1a1a2e; padding:1rem; text-align:center; }
+    body { background:#0a0a0a; color:#fff; overflow:hidden; }
+    header { background:#1a1a2e; padding:1rem; text-align:center; position:relative; z-index:10; }
     h1 { font-size:1.4rem; margin:0; }
     #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
-    #map { height:80vh; width:100%; }
-    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
-    @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
+    #map-container { position:relative; height:80vh; width:100%; }
+    #map { height:100%; width:100%; }
+    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; position:relative; z-index:10; }
+
+    /* === ETHEREAL MIST SWIRLS === */
+    .mist {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(200,220,255,0.08) 0%, transparent 70%);
+      opacity: 0.6;
+      animation: swirl 25s infinite linear;
+      z-index: 1;
+    }
+    .mist:nth-child(2) { animation-delay: -8s; opacity: 0.4; }
+    .mist:nth-child(3) { animation-delay: -16s; opacity: 0.3; }
+
+    @keyframes swirl {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(30vw, -20vh) rotate(360deg); }
+    }
+
+    /* Pin Glow */
+    .gm-style .gm-style-iw-c { filter: drop-shadow(0 0 8px rgba(255,255,255,0.7)); }
+
+    @media (max-width:600px) { h1{font-size:1.2rem} #map-container{height:70vh} }
   </style>
 </head>
 <body>
   <header>
     <h1>Hauntly</h1>
-    <p>GhostTourBookings locations + 25 Victoria cemeteries (100km of Melbourne)</p>
+    <p>37 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
-  <div id="map"></div>
-  <footer>Tap pins for haunt details. <a href="https://ghosttourbookings.com.au/" target="_blank" style="color:#00ff9d">Book Tours</a></footer>
+
+  <div id="map-container">
+    <div id="map"></div>
+    <div class="mist"></div>
+    <div class="mist"></div>
+    <div class="mist"></div>
+  </div>
+
+  <footer>Tap pins for haunt details.</footer>
 
   <!-- Global initMap -->
   <script>
     let map;
     const haunts = [
-      // === GHOSTTOURBOOKINGS LOCATIONS ===
-      ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with ghosts, dark secrets, and paranormal hunts.", "ghost"],
-      ["Bishops Palace", -37.2400, 144.4400, "👻", "Site for paranormal investigations in Kyneton.", "ghost"],
-      ["Q Station", -33.8000, 151.2167, "👻", "Quarantine Station Ghostly Getaway and Encounters Tour in Sydney.", "ghost"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "👻", "Historic penitentiary with ghost tours by National Trust Tasmania.", "ghost"],
-      ["The Rocks", -33.8590, 151.2093, "👻", "Haunted pubs, cellars, and dark past insta spots in Sydney.", "ghost"],
-      ["Haunted Melbourne", -37.8136, 144.9631, "👻", "Self-guided haunted tour of Melbourne by Lantern Ghost Tours.", "ghost"],
-      ["Berrima Courthouse", -34.5167, 148.5500, "👻", "Interactive ghost tour at historic courthouse by APPI Ghost Hunts.", "ghost"],
-      ["Military Gaol", -42.8800, 147.3300, "👻", "Paranormal investigation at Tasmania's most haunted military site.", "ghost"],
-      ["Daylesford Lockup", -37.3464, 144.1436, "👻", "Paranormal investigation at historic lockup by Kyneton Paranormal.", "ghost"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "👻", "Original ghost tour at cemetery by Ghost Tours Pty Ltd in Brisbane.", "ghost"],
-      ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Ghost walk at historic asylum by Tasmania's Most Haunted.", "ghost"],
-      ["Port Adelaide Ghosts", -34.8500, 138.5300, "👻", "Self-guided walking tour of port ghosts by Allen Tiller.", "ghost"],
+      // === TOURS LOCATIONS ===
+      ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with tours, dark secrets, and paranormal hunts.", "ghost"],
+      ["Bishops Palace", -37.2400, 144.4400, "👻", "Site for paranormal tours in Kyneton.", "ghost"],
+      ["Q Station", -33.8000, 151.2167, "👻", "Quarantine Station tours and encounters in Sydney.", "ghost"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "👻", "Historic penitentiary with tours by National Trust Tasmania.", "ghost"],
+      ["The Rocks", -33.8590, 151.2093, "👻", "Haunted pubs, cellars, and dark past tours in Sydney.", "ghost"],
+      ["Haunted Melbourne", -37.8136, 144.9631, "👻", "Self-guided haunted tours of Melbourne by Lantern Tours.", "ghost"],
+      ["Berrima Courthouse", -34.5167, 148.5500, "👻", "Interactive tours at historic courthouse by APPI Ghost Hunts.", "ghost"],
+      ["Military Gaol", -42.8800, 147.3300, "👻", "Paranormal tours at Tasmania's most haunted military site.", "ghost"],
+      ["Daylesford Lockup", -37.3464, 144.1436, "👻", "Paranormal tours at historic lockup by Kyneton Paranormal.", "ghost"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "👻", "Original tour at cemetery in Brisbane.", "ghost"],
+      ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Tours at historic asylum by Tasmania's Most Haunted.", "ghost"],
+      ["Port Adelaide Ghosts", -34.8500, 138.5300, "👻", "Self-guided walking tours of port ghosts by Allen Tiller.", "ghost"],
 
       // === 25 VICTORIA CEMETERIES ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
@@ -88,13 +119,20 @@
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
-        center: { lat: -37.8136, lng: 144.9631 }, // Melbourne CBD
-        styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
+        center: { lat: -37.8136, lng: 144.9631 },
+        styles: [
+          { featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+          { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
+          { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#1a1f2e" }] },
+          { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
+        ]
       });
 
       haunts.forEach(h => {
         const isCemetery = h[5] === "gravestone" || h[0].toLowerCase().includes("cemetery");
-        const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+        const icon = isCemetery 
+          ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2EwN2RmZiIgc3Ryb2tlPSIjN2Q1ZmZmIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=" 
+          : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmNDU0NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
         const emoji = isCemetery ? "🪦" : "👻";
 
         const marker = new google.maps.Marker({
@@ -117,13 +155,11 @@
           `
         });
 
-        marker.addListener("click", () => {
-          infoWindow.open(map, marker);
-        });
+        marker.addListener("click", () => infoWindow.open(map, marker));
       });
     }
 
-    // GPS Button (Fixed Timeout)
+    // GPS Button
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
         alert("GPS not supported.");
@@ -136,7 +172,7 @@
           map.setZoom(12);
         },
         err => alert("GPS Error: " + (err.message || "Try again")),
-        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 30000 }
       );
     };
   </script>
