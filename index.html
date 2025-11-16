@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR – Ghost Emoji</title>
+  <title>Hauntly AR – Facing + Distance Scaling</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -33,9 +33,10 @@
     #loading { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10001; color:#fff; font-size:1.2em; }
     #ghostOverlay { 
       position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); 
-      font-size:15vw; pointer-events:none; z-index:10002; text-align:center; line-height:1;
+      pointer-events:none; z-index:10002; text-align:center; line-height:1; transition: all 0.3s ease;
     }
-    #ghostOverlay small { font-size:0.2em; display:block; margin-top:10px; color:#aaa; }
+    #ghostOverlay .emoji { font-size:15vw; }
+    #ghostOverlay .distance { font-size:3vw; color:#ccc; margin-top:10px; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
@@ -47,7 +48,7 @@
   </header>
   <div id="map"></div>
   <button id="arBtn">AR Mode</button>
-  <footer>Ghost appears within 3km!</footer>
+  <footer>Ghost appears when facing haunt (within 3km)</footer>
 
   <!-- AR Container -->
   <div id="arContainer">
@@ -55,15 +56,16 @@
     <div id="loading">Loading AR...</div>
     <video id="cameraFeed" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
     <div id="ghostOverlay">
-      Ghost<br><small id="distanceText"></small>
+      <div class="emoji">Ghost</div>
+      <div class="distance" id="distanceText"></div>
     </div>
   </div>
 
   <!-- Global initMap + AR Logic -->
   <script>
-    let map, arWatcher, stream;
+    let map, arWatcher, stream, heading = 0;
     const haunts = [
-      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "Your home – AR ghost appears when in range!", "ghost"]
+      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "Your home – AR ghost appears when facing it!", "ghost"]
     ];
 
     function initMap() {
@@ -134,6 +136,11 @@
         arContainer.style.display = "block";
         document.getElementById("loading").style.display = "none";
 
+        // Request compass permission (iOS)
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission().catch(() => alert("Compass denied. Turn on in Settings."));
+        }
+
         document.getElementById("backBtn").onclick = () => {
           if (stream) {
             stream.getTracks().forEach(track => track.stop());
@@ -143,15 +150,23 @@
           document.getElementById("map").style.display = "block";
           arBtn.style.display = "block";
           if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
+          window.removeEventListener('deviceorientation', handleOrientation);
         };
 
-        startGhostWatch();
+        startARGhostWatch();
+        window.addEventListener('deviceorientation', handleOrientation);
       } catch (err) {
         alert("Camera access denied. Allow camera to use AR.");
       }
     };
 
-    function startGhostWatch() {
+    function handleOrientation(event) {
+      if (event.alpha !== null) {
+        heading = event.alpha; // 0–360°
+      }
+    }
+
+    function startARGhostWatch() {
       arWatcher = navigator.geolocation.watchPosition(position => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
@@ -159,20 +174,43 @@
         const h = haunts[0];
         const dist = getDistance(userLat, userLng, h[1], h[2]);
 
-        if (dist < 3000) {
+        if (dist > 3000) {
+          ghostOverlay.style.display = "none";
+          return;
+        }
+
+        // Calculate bearing to haunt
+        const bearing = getBearing(userLat, userLng, h[1], h[2]);
+        const diff = Math.abs(((bearing - heading + 360) % 360));
+
+        // Show only if facing ±45° of haunt
+        if (diff <= 45 || diff >= 315) {
           ghostOverlay.style.display = "block";
           distanceText.textContent = `${Math.round(dist)}m away`;
+
+          // Scale ghost size based on distance
+          const scale = Math.max(5, Math.min(20, 20 - (dist / 150)));
+          document.querySelector(".emoji").style.fontSize = `${scale}vw`;
         } else {
           ghostOverlay.style.display = "none";
         }
       }, () => {}, { enableHighAccuracy: true });
     }
 
+    function getBearing(lat1, lon1, lat2, lon2) {
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
+      const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
+      let brng = Math.atan2(y, x) * 180 / Math.PI;
+      return (brng + 360) % 360;
+    }
+
     function getDistance(lat1, lon1, lat2, lon2) {
       const R = 6371000;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      const a = Math.sin(dLat/2) * Math.sin(dLat/gt2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                 Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
