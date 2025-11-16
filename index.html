@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly AR – Facing + Distance Scaling</title>
+  <title>Hauntly – GhostTourBookings + Victoria Cemeteries</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -24,69 +24,90 @@
     body { background:#0a0a0a; color:#fff; }
     header { background:#1a1a2e; padding:1rem; text-align:center; }
     h1 { font-size:1.4rem; margin:0; }
-    #gps, #arBtn, #backBtn { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin:0.5rem; cursor:pointer; }
+    #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
     #map { height:80vh; width:100%; }
     footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
-    #arContainer { display:none; width:100%; height:100vh; position:fixed; top:0; left:0; z-index:9999; background:#000; }
-    #arBtn { position:fixed; bottom:20px; right:20px; z-index:1000; }
-    #backBtn { position:fixed; top:20px; left:20px; z-index:10000; }
-    #loading { position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10001; color:#fff; font-size:1.2em; }
-    #ghostOverlay { 
-      position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); 
-      pointer-events:none; z-index:10002; text-align:center; line-height:1; transition: all 0.3s ease;
-    }
-    #ghostOverlay .emoji { font-size:15vw; }
-    #ghostOverlay .distance { font-size:3vw; color:#ccc; margin-top:10px; }
     @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
 <body>
   <header>
-    <h1>Hauntly AR</h1>
-    <p>Test at 98 Carora Circuit, Clyde North</p>
+    <h1>Hauntly</h1>
+    <p>GhostTourBookings locations + 25 Victoria cemeteries (100km of Melbourne)</p>
     <button id="gps">Center on Me</button>
   </header>
   <div id="map"></div>
-  <button id="arBtn">AR Mode</button>
-  <footer>Ghost appears when facing haunt (within 3km)</footer>
+  <footer>Tap pins for haunt details. <a href="https://ghosttourbookings.com.au/" target="_blank" style="color:#00ff9d">Book Tours</a></footer>
 
-  <!-- AR Container -->
-  <div id="arContainer">
-    <button id="backBtn">Back to Map</button>
-    <div id="loading">Loading AR...</div>
-    <video id="cameraFeed" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
-    <div id="ghostOverlay">
-      <div class="emoji">Ghost</div>
-      <div class="distance" id="distanceText"></div>
-    </div>
-  </div>
-
-  <!-- Global initMap + AR Logic -->
+  <!-- Global initMap -->
   <script>
-    let map, arWatcher, stream, heading = 0;
+    let map;
     const haunts = [
-      ["98 Carora Circuit, Clyde North", -38.105609, 145.363497, "Ghost", "Your home – AR ghost appears when facing it!", "ghost"]
+      // === GHOSTTOURBOOKINGS LOCATIONS ===
+      ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with ghosts, dark secrets, and paranormal hunts.", "ghost"],
+      ["Bishops Palace", -37.2400, 144.4400, "👻", "Site for paranormal investigations in Kyneton.", "ghost"],
+      ["Q Station", -33.8000, 151.2167, "👻", "Quarantine Station Ghostly Getaway and Encounters Tour in Sydney.", "ghost"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "👻", "Historic penitentiary with ghost tours by National Trust Tasmania.", "ghost"],
+      ["The Rocks", -33.8590, 151.2093, "👻", "Haunted pubs, cellars, and dark past insta spots in Sydney.", "ghost"],
+      ["Haunted Melbourne", -37.8136, 144.9631, "👻", "Self-guided haunted tour of Melbourne by Lantern Ghost Tours.", "ghost"],
+      ["Berrima Courthouse", -34.5167, 148.5500, "👻", "Interactive ghost tour at historic courthouse by APPI Ghost Hunts.", "ghost"],
+      ["Military Gaol", -42.8800, 147.3300, "👻", "Paranormal investigation at Tasmania's most haunted military site.", "ghost"],
+      ["Daylesford Lockup", -37.3464, 144.1436, "👻", "Paranormal investigation at historic lockup by Kyneton Paranormal.", "ghost"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "👻", "Original ghost tour at cemetery by Ghost Tours Pty Ltd in Brisbane.", "ghost"],
+      ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Ghost walk at historic asylum by Tasmania's Most Haunted.", "ghost"],
+      ["Port Adelaide Ghosts", -34.8500, 138.5300, "👻", "Self-guided walking tour of port ghosts by Allen Tiller.", "ghost"],
+
+      // === 25 VICTORIA CEMETERIES ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
+      ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855, with heritage-listed monuments.", "gravestone"],
+      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856, where pines cast eternal shadows.", "gravestone"],
+      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "🪦", "Opened 1880 as Victoria's first crematorium, blending ashes with gardens.", "gravestone"],
+      ["Preston Cemetery", -37.7333, 145.0000, "🪦", "Founded 1864 for northern suburbs, expanded in 1920s amid Melbourne's suburban boom.", "gravestone"],
+      ["Heidelberg Cemetery", -37.7667, 145.0333, "🪦", "Established 1856, home to Yarra Valley pioneers and whispers from the gold rush era.", "gravestone"],
+      ["Boroondara General Cemetery", -37.8037, 145.0412, "🪦", "Opened 1858 in Hawthorn, resting place for artists and politicians under ancient oaks.", "gravestone"],
+      ["Brighton General Cemetery", -37.9013, 145.0207, "🪦", "Laid out 1854 by Robert Hoddle, now a bayside haven for 40,000 souls and VC heroes.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments and 50+ themed gardens.", "gravestone"],
+      ["Bunurong Memorial Park", -38.0648, 145.2004, "🪦", "Opened 1994 near Dandenong, modern sanctuary for southern suburbs' departed.", "gravestone"],
+      ["Berwick Cemetery", -38.0333, 145.3500, "🪦", "Rural burial ground since 1861, echoing with tales from Casey shire's farming ghosts.", "gravestone"],
+      ["Box Hill Cemetery", -37.8167, 145.1200, "🪦", "Historic site in Whitehorse, interring eastern Melbourne families since the 1860s.", "gravestone"],
+      ["Templestowe Cemetery", -37.7595, 145.1417, "🪦", "Established 1860, quiet haven for Manningham pioneers amid suburban sprawl.", "gravestone"],
+      ["Eltham Cemetery", -37.7266, 145.1503, "🪦", "Opened 1861 in Nillumbik, surrounded by bushland where artists' spirits linger.", "gravestone"],
+      ["Warrandyte Cemetery", -37.7333, 145.2000, "🪦", "Riverside graves since 1850s, haunted by gold miners along the Yarra.", "gravestone"],
+      ["Lilydale Memorial Park", -37.7352, 145.3425, "🪦", "Yarra Ranges site since 1862, blending lawns with echoes of rural Victoria.", "gravestone"],
+      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "🪦", "Companion to Memorial Park, opened 1960s for modern interments in the hills.", "gravestone"],
+      ["Yarra Glen Cemetery", -37.6500, 145.3833, "🪦", "Small 1860s plot in Yarra Valley, where winemakers' ghosts toast eternally.", "gravestone"],
+      ["Healesville Cemetery", -37.6610, 145.5281, "🪦", "Bushland burial ground since 1865, near sanctuary where animals and souls coexist.", "gravestone"],
+      ["Woori Yallock Cemetery", -37.7833, 145.5000, "🪦", "Rural site from 1880s, shadowed by Yarra Ranges' misty mornings.", "gravestone"],
+      ["Cranbourne Cemetery", -38.1000, 145.0167, "🪦", "Near Cranbourne, opened 1880s for southeast farmers' final rest.", "gravestone"],
+      ["Frankston Memorial Park", -38.1500, 145.1333, "🪦", "Coastal cemetery since 1960s, waves crashing near 50,000 graves.", "gravestone"],
+      ["Geelong Memorial Park", -38.1500, 144.3833, "🪦", "75km west of CBD, established 1855 as Victoria's second-largest necropolis.", "gravestone"],
+      ["Torquay Cemetery", -38.3167, 144.3167, "🪦", "Bayside site since 1860s, haunted by shipwreck sailors from Bass Strait.", "gravestone"],
+      ["Barwon Heads Cemetery", -38.2833, 144.4833, "🪦", "Seaside graves from 1870s, where ocean winds carry whispers of the lost.", "gravestone"]
     ];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 12,
-        center: { lat: -38.105609, lng: 145.363497 },
+        zoom: 10,
+        center: { lat: -37.8136, lng: 144.9631 }, // Melbourne CBD
         styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
       });
 
       haunts.forEach(h => {
+        const isCemetery = h[5] === "gravestone" || h[0].toLowerCase().includes("cemetery");
+        const icon = isCemetery ? "https://maps.google.com/mapfiles/ms/icons/purple-dot.png" : "https://maps.google.com/mapfiles/ms/icons/red-dot.png";
+        const emoji = isCemetery ? "🪦" : "👻";
+
         const marker = new google.maps.Marker({
           position: { lat: h[1], lng: h[2] },
           map: map,
           title: h[0],
-          icon: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+          icon: icon
         });
 
         const infoWindow = new google.maps.InfoWindow({
           content: `
             <div style="max-width:260px; color:#000; background:#fff; padding:10px; border-radius:8px; position:relative;">
-              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">Ghost</div>
+              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${emoji}</div>
               <div style="margin-left:50px;">
                 <b style="font-size:1.1em;">${h[0]}</b><br>
                 <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
@@ -96,11 +117,13 @@
           `
         });
 
-        marker.addListener("click", () => infoWindow.open(map, marker));
+        marker.addListener("click", () => {
+          infoWindow.open(map, marker);
+        });
       });
     }
 
-    // GPS Button
+    // GPS Button (Fixed Timeout)
     document.getElementById("gps").onclick = () => {
       if (!navigator.geolocation) {
         alert("GPS not supported.");
@@ -110,112 +133,12 @@
         pos => {
           const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           map.setCenter(userPos);
-          map.setZoom(14);
+          map.setZoom(12);
         },
         err => alert("GPS Error: " + (err.message || "Try again")),
-        { enableHighAccuracy: true, timeout: 30000 }
+        { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
       );
     };
-
-    // AR Mode
-    const arBtn = document.getElementById("arBtn");
-    const arContainer = document.getElementById("arContainer");
-    const cameraFeed = document.getElementById("cameraFeed");
-    const ghostOverlay = document.getElementById("ghostOverlay");
-    const distanceText = document.getElementById("distanceText");
-
-    arBtn.onclick = async () => {
-      document.getElementById("map").style.display = "none";
-      arBtn.style.display = "none";
-      document.getElementById("loading").style.display = "block";
-
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        cameraFeed.srcObject = stream;
-        cameraFeed.play();
-        arContainer.style.display = "block";
-        document.getElementById("loading").style.display = "none";
-
-        // Request compass permission (iOS)
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-          DeviceOrientationEvent.requestPermission().catch(() => alert("Compass denied. Turn on in Settings."));
-        }
-
-        document.getElementById("backBtn").onclick = () => {
-          if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-          }
-          arContainer.style.display = "none";
-          document.getElementById("map").style.display = "block";
-          arBtn.style.display = "block";
-          if (arWatcher) navigator.geolocation.clearWatch(arWatcher);
-          window.removeEventListener('deviceorientation', handleOrientation);
-        };
-
-        startARGhostWatch();
-        window.addEventListener('deviceorientation', handleOrientation);
-      } catch (err) {
-        alert("Camera access denied. Allow camera to use AR.");
-      }
-    };
-
-    function handleOrientation(event) {
-      if (event.alpha !== null) {
-        heading = event.alpha; // 0–360°
-      }
-    }
-
-    function startARGhostWatch() {
-      arWatcher = navigator.geolocation.watchPosition(position => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-
-        const h = haunts[0];
-        const dist = getDistance(userLat, userLng, h[1], h[2]);
-
-        if (dist > 3000) {
-          ghostOverlay.style.display = "none";
-          return;
-        }
-
-        // Calculate bearing to haunt
-        const bearing = getBearing(userLat, userLng, h[1], h[2]);
-        const diff = Math.abs(((bearing - heading + 360) % 360));
-
-        // Show only if facing ±45° of haunt
-        if (diff <= 45 || diff >= 315) {
-          ghostOverlay.style.display = "block";
-          distanceText.textContent = `${Math.round(dist)}m away`;
-
-          // Scale ghost size based on distance
-          const scale = Math.max(5, Math.min(20, 20 - (dist / 150)));
-          document.querySelector(".emoji").style.fontSize = `${scale}vw`;
-        } else {
-          ghostOverlay.style.display = "none";
-        }
-      }, () => {}, { enableHighAccuracy: true });
-    }
-
-    function getBearing(lat1, lon1, lat2, lon2) {
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
-      const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
-                Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLon);
-      let brng = Math.atan2(y, x) * 180 / Math.PI;
-      return (brng + 360) % 360;
-    }
-
-    function getDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/gt2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
-    }
   </script>
 </body>
 </html>
