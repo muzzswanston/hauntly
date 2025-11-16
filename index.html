@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Tours + Cemeteries</title>
+  <title>Hauntly – Gothic Ink with Roads</title>
 
   <!-- Secure Google Maps API Key -->
   <script type="module">
@@ -21,13 +21,54 @@
 
   <style>
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
-    body { background:#0a0a0a; color:#fff; }
-    header { background:#1a1a2e; padding:1rem; text-align:center; }
+    body { background:#0a0a0a; color:#fff; overflow-x:hidden; }
+    header { background:#1a1a2e; padding:1rem; text-align:center; position:relative; z-index:10; }
     h1 { font-size:1.4rem; margin:0; }
     #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
-    #map { height:80vh; width:100%; }
-    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
-    @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
+    #map-container { position:relative; height:80vh; width:100%; overflow:hidden; }
+    #map { height:100%; width:100%; }
+    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; position:relative; z-index:10; }
+
+    /* FIXED ETHEREAL MIST SWIRLS (Above Map) */
+    .mist {
+      position: absolute;
+      top: 0; left: 0;
+      width: 200%; height: 200%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(200,220,255,0.08) 0%, transparent 70%);
+      opacity: 0.6;
+      animation: swirl 30s infinite linear;
+      z-index: 1; /* Above map canvas */
+      will-change: transform;
+    }
+    .mist:nth-child(2) { animation-delay: -10s; opacity: 0.4; }
+    .mist:nth-child(3) { animation-delay: -20s; opacity: 0.3; }
+
+    @keyframes swirl {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(50vw, -30vh) rotate(360deg); }
+    }
+
+    /* Wandering Ghosts (Floating Above) */
+    .ghost {
+      position: absolute;
+      width: 60px; height: 80px;
+      background: radial-gradient(ellipse, rgba(255,255,255,0.3) 0%, transparent 70%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      opacity: 0.5;
+      z-index: 2;
+      animation: wander 25s infinite ease-in-out;
+    }
+    .ghost:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+    .ghost:nth-child(2) { top: 60%; left: 80%; animation-delay: -8s; }
+    .ghost:nth-child(3) { top: 40%; left: 40%; animation-delay: -16s; }
+
+    @keyframes wander {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+      50% { transform: translateY(-50px) rotate(10deg); opacity: 0.8; }
+    }
+
+    @media (max-width:600px) { h1{font-size:1.2rem} #map-container{height:70vh} }
   </style>
 </head>
 <body>
@@ -36,7 +77,17 @@
     <p>37 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
-  <div id="map"></div>
+
+  <div id="map-container">
+    <div id="map"></div>
+    <div class="mist"></div>
+    <div class="mist"></div>
+    <div class="mist"></div>
+    <div class="ghost"></div>
+    <div class="ghost"></div>
+    <div class="ghost"></div>
+  </div>
+
   <footer>Tap pins for haunt details.</footer>
 
   <!-- Global initMap -->
@@ -57,8 +108,8 @@
       ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Tours at historic asylum by Tasmania's Most Haunted.", "ghost"],
       ["Port Adelaide Ghosts", -34.8500, 138.5300, "👻", "Self-guided walking tours of port ghosts by Allen Tiller.", "ghost"],
 
-      // === 25 VICTORIA CEMETERIES (Verified Coordinates) ===
-      ["Melbourne General Cemetery", -37.7854, 144.9663, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
+      // === 25 VICTORIA CEMETERIES ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
       ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855, with heritage-listed monuments.", "gravestone"],
       ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856, where pines cast eternal shadows.", "gravestone"],
       ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "🪦", "Opened 1880 as Victoria's first crematorium, blending ashes with gardens.", "gravestone"],
@@ -89,7 +140,26 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 10,
         center: { lat: -37.8136, lng: 144.9631 },
-        styles: [{ featureType: "all", elementType: "geometry", stylers: [{ color: "#242f3e" }] }]
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+          { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+          { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+          { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+          { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+          { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+          { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+          { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+          { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+          { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+          { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+          { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+          { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+          { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+          { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+          { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
+        ]
       });
 
       haunts.forEach(h => {
