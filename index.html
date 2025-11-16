@@ -114,7 +114,7 @@
       filter: drop-shadow(0 0 10px rgba(200,220,255,0.8));
     }
     .ghost:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
-    .ghost:nth-child(2) { top: 50 \%$; left: 75%; animation-delay: -7s; }
+    .ghost:nth-child(2) { top: 50%; left: 75%; animation-delay: -7s; }
     .ghost:nth-child(3) { top: 70%; left: 30%; animation-delay: -14s; }
 
     @keyframes wander {
@@ -152,6 +152,8 @@
   <!-- Global initMap -->
   <script>
     let map;
+    let currentInfoWindow = null; // ← Single popup
+
     const haunts = [
       // === TOURS LOCATIONS ===
       ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with tours, dark secrets, and paranormal hunts.", "ghost"],
@@ -235,7 +237,11 @@
           `
         });
 
-        marker.addListener("click", () => infoWindow.open(map, marker));
+        marker.addListener("click", () => {
+          if (currentInfoWindow) currentInfoWindow.close();
+          infoWindow.open(map, marker);
+          currentInfoWindow = infoWindow;
+        });
       });
     }
 
