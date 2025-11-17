@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Gothic Ink</title>
+  <title>Hauntly – Gothic Ink + Booking Links</title>
 
   <!-- Google Maps API -->
   <script type="module">
@@ -57,11 +57,7 @@
       width:100%; 
       overflow:hidden;
     }
-    #map { 
-      height:100%; 
-      width:100%; 
-      z-index:0;
-    }
+    #map { height:100%; width:100%; z-index:0; }
     footer { 
       text-align:center; 
       padding:.5rem; 
@@ -82,7 +78,7 @@
       z-index: 3;
     }
 
-    /* Ethereal Mist (Above Map) */
+    /* Ethereal Mist */
     .mist {
       position: absolute;
       top: 0; left: 0;
@@ -122,6 +118,17 @@
       50% { transform: translateY(-40px) rotate(8deg); opacity: 0.8; }
     }
 
+    .book-btn {
+      background: #ff4500;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
     @media (max-width:600px) { 
       h1{font-size:1.4rem} 
       #map-container{height:70vh} 
@@ -132,7 +139,7 @@
 <body>
   <header>
     <h1>Hauntly</h1>
-    <p>37 Haunted Locations: Tours + Victoria Cemeteries</p>
+    <p>49 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
 
@@ -149,52 +156,51 @@
 
   <footer>Tap pins for haunt details.</footer>
 
-  <!-- Global initMap -->
   <script>
     let map;
-    let currentInfoWindow = null; // ← Single popup
+    let currentInfoWindow = null;
 
     const haunts = [
-      // === TOURS LOCATIONS ===
-      ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with tours, dark secrets, and paranormal hunts.", "ghost"],
-      ["Bishops Palace", -37.2400, 144.4400, "👻", "Site for paranormal tours in Kyneton.", "ghost"],
-      ["Q Station", -33.8000, 151.2167, "👻", "Quarantine Station tours and encounters in Sydney.", "ghost"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "👻", "Historic penitentiary with tours by National Trust Tasmania.", "ghost"],
-      ["The Rocks", -33.8590, 151.2093, "👻", "Haunted pubs, cellars, and dark past tours in Sydney.", "ghost"],
-      ["Haunted Melbourne", -37.8136, 144.9631, "👻", "Self-guided haunted tours of Melbourne by Lantern Tours.", "ghost"],
-      ["Berrima Courthouse", -34.5167, 148.5500, "👻", "Interactive tours at historic courthouse by APPI Ghost Hunts.", "ghost"],
-      ["Military Gaol", -42.8800, 147.3300, "👻", "Paranormal tours at Tasmania's most haunted military site.", "ghost"],
-      ["Daylesford Lockup", -37.3464, 144.1436, "👻", "Paranormal tours at historic lockup by Kyneton Paranormal.", "ghost"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "👻", "Original tour at cemetery in Brisbane.", "ghost"],
-      ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Tours at historic asylum by Tasmania's Most Haunted.", "ghost"],
-      ["Port Adelaide Ghosts", -34.8500, 138.5300, "👻", "Self-guided walking tours of port ghosts by Allen Tiller.", "ghost"],
+      // === ORIGINAL TOURS ===
+      ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with tours and paranormal hunts.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/adelaide-gaol-ghost-tour/"],
+      ["Q Station", -33.8000, 151.2167, "👻", "Quarantine Station ghostly encounters tour in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/q-station-ghost-tour/"],
+      ["The Rocks", -33.8590, 151.2093, "👻", "Haunted pubs and dark history walking tour in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/the-rocks-ghost-tour/"],
+      ["Old Melbourne Gaol", -37.8136, 144.9631, "👻", "Night tour of Ned Kelly's prison with ghost stories.", "ghost", "https://www.adrenaline.com.au/melbourne/ghost-tours/old-melbourne-gaol-night-tour/"],
+      ["Fremantle Prison", -32.0560, 115.7486, "👻", "Torchlight tour of haunted Fremantle Prison.", "ghost", "https://www.adrenaline.com.au/perth/ghost-tours/fremantle-prison-torchlight-tour/"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "👻", "Brisbane's original ghost tour at historic cemetery.", "ghost", "https://www.adrenaline.com.au/brisbane/ghost-tours/toowong-cemetery-ghost-tour/"],
+      ["Port Arthur", -43.1500, 147.8500, "👻", "Iconic Tasmanian convict site with ghost tours.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/port-arthur-ghost-tour/"],
+      ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Australia's oldest mental asylum ghost tour.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/willow-court-ghost-tour/"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "👻", "Historic Hobart prison ghost tour.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/hobart-penitentiary-ghost-tour/"],
+      ["Ballarat Ghost Tour", -37.5635, 143.8560, "👻", "Gold rush era haunted sites walking tour.", "ghost", "https://www.adrenaline.com.au/ballarat/ghost-tours/ballarat-ghost-tour/"],
+      ["Aradale Asylum", -37.2833, 142.9333, "👻", "Australia's largest abandoned asylum ghost tour.", "ghost", "https://www.adrenaline.com.au/ararat/ghost-tours/aradale-ghost-tour/"],
+      ["Monte Cristo Homestead", -34.4833, 148.0167, "👻", "Australia's most haunted house tour.", "ghost", "https://www.adrenaline.com.au/junee/ghost-tours/monte-cristo-ghost-tour/"],
 
-      // === 25 VICTORIA CEMETERIES ===
-      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
-      ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855, with heritage-listed monuments.", "gravestone"],
-      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856, where pines cast eternal shadows.", "gravestone"],
-      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "🪦", "Opened 1880 as Victoria's first crematorium, blending ashes with gardens.", "gravestone"],
-      ["Preston Cemetery", -37.7333, 145.0000, "🪦", "Founded 1864 for northern suburbs, expanded in 1920s amid Melbourne's suburban boom.", "gravestone"],
-      ["Heidelberg Cemetery", -37.7667, 145.0333, "🪦", "Established 1856, home to Yarra Valley pioneers and whispers from the gold rush era.", "gravestone"],
-      ["Boroondara General Cemetery", -37.8037, 145.0412, "🪦", "Opened 1858 in Hawthorn, resting place for artists and politicians under ancient oaks.", "gravestone"],
-      ["Brighton General Cemetery", -37.9013, 145.0207, "🪦", "Laid out 1854 by Robert Hoddle, now a bayside haven for 40,000 souls and VC heroes.", "gravestone"],
-      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments and 50+ themed gardens.", "gravestone"],
-      ["Bunurong Memorial Park", -38.0648, 145.2004, "🪦", "Opened 1994 near Dandenong, modern sanctuary for southern suburbs' departed.", "gravestone"],
-      ["Berwick Cemetery", -38.0333, 145.3500, "🪦", "Rural burial ground since 1861, echoing with tales from Casey shire's farming ghosts.", "gravestone"],
-      ["Box Hill Cemetery", -37.8167, 145.1200, "🪦", "Historic site in Whitehorse, interring eastern Melbourne families since the 1860s.", "gravestone"],
-      ["Templestowe Cemetery", -37.7595, 145.1417, "🪦", "Established 1860, quiet haven for Manningham pioneers amid suburban sprawl.", "gravestone"],
-      ["Eltham Cemetery", -37.7266, 145.1503, "🪦", "Opened 1861 in Nillumbik, surrounded by bushland where artists' spirits linger.", "gravestone"],
-      ["Warrandyte Cemetery", -37.7333, 145.2000, "🪦", "Riverside graves since 1850s, haunted by gold miners along the Yarra.", "gravestone"],
-      ["Lilydale Memorial Park", -37.7352, 145.3425, "🪦", "Yarra Ranges site since 1862, blending lawns with echoes of rural Victoria.", "gravestone"],
-      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "🪦", "Companion to Memorial Park, opened 1960s for modern interments in the hills.", "gravestone"],
-      ["Yarra Glen Cemetery", -37.6500, 145.3833, "🪦", "Small 1860s plot in Yarra Valley, where winemakers' ghosts toast eternally.", "gravestone"],
-      ["Healesville Cemetery", -37.6610, 145.5281, "🪦", "Bushland burial ground since 1865, near sanctuary where animals and souls coexist.", "gravestone"],
-      ["Woori Yallock Cemetery", -37.7833, 145.5000, "🪦", "Rural site from 1880s, shadowed by Yarra Ranges' misty mornings.", "gravestone"],
-      ["Cranbourne Cemetery", -38.1000, 145.0167, "🪦", "Near Cranbourne, opened 1880s for southeast farmers' final rest.", "gravestone"],
-      ["Frankston Memorial Park", -38.1500, 145.1333, "🪦", "Coastal cemetery since 1960s, waves crashing near 50,000 graves.", "gravestone"],
-      ["Geelong Memorial Park", -38.1500, 144.3833, "🪦", "75km west of CBD, established 1855 as Victoria's second-largest necropolis.", "gravestone"],
-      ["Torquay Cemetery", -38.3167, 144.3167, "🪦", "Bayside site since 1860s, haunted by shipwreck sailors from Bass Strait.", "gravestone"],
-      ["Barwon Heads Cemetery", -38.2833, 144.4833, "🪦", "Seaside graves from 1870s, where ocean winds carry whispers of the lost.", "gravestone"]
+      // === 25 VICTORIA CEMETERIES (no link) ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
+      ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery, established 1855.", "gravestone"],
+      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards since 1856.", "gravestone"],
+      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "Grave", "Opened 1880 as Victoria's first crematorium.", "gravestone"],
+      ["Preston Cemetery", -37.7333, 145.0000, "Grave", "Founded 1864 for northern suburbs.", "gravestone"],
+      ["Heidelberg Cemetery", -37.7667, 145.0333, "Grave", "Established 1856, home to Yarra Valley pioneers.", "gravestone"],
+      ["Boroondara General Cemetery", -37.8037, 145.0412, "Grave", "Opened 1858 in Hawthorn.", "gravestone"],
+      ["Brighton General Cemetery", -37.9013, 145.0207, "Grave", "Laid out 1854 by Robert Hoddle.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery with over 200,000 interments.", "gravestone"],
+      ["Bunurong Memorial Park", -38.0648, 145.2004, "Grave", "Modern sanctuary opened 1994.", "gravestone"],
+      ["Berwick Cemetery", -38.0333, 145.3500, "Grave", "Rural burial ground since 1861.", "gravestone"],
+      ["Box Hill Cemetery", -37.8167, 145.1200, "Grave", "Historic site in Whitehorse since the 1860s.", "gravestone"],
+      ["Templestowe Cemetery", -37.7595, 145.1417, "Grave", "Established 1860.", "gravestone"],
+      ["Eltham Cemetery", -37.7266, 145.1503, "Grave", "Opened 1861 in Nillumbik.", "gravestone"],
+      ["Warrandyte Cemetery", -37.7333, 145.2000, "Grave", "Riverside graves since 1850s.", "gravestone"],
+      ["Lilydale Memorial Park", -37.7352, 145.3425, "Grave", "Yarra Ranges site since 1862.", "gravestone"],
+      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "Grave", "Modern companion cemetery.", "gravestone"],
+      ["Yarra Glen Cemetery", -37.6500, 145.3833, "Grave", "Small 1860s plot in Yarra Valley.", "gravestone"],
+      ["Healesville Cemetery", -37.6610, 145.5281, "Grave", "Bushland burial ground since 1865.", "gravestone"],
+      ["Woori Yallock Cemetery", -37.7833, 145.5000, "Grave", "Rural site from 1880s.", "gravestone"],
+      ["Cranbourne Cemetery", -38.1000, 145.0167, "Grave", "Southeast farmers' final rest.", "gravestone"],
+      ["Frankston Memorial Park", -38.1500, 145.1333, "Grave", "Coastal cemetery since 1960s.", "gravestone"],
+      ["Geelong Memorial Park", -38.1500, 144.3833, "Grave", "Established 1855, Victoria's second-largest.", "gravestone"],
+      ["Torquay Cemetery", -38.3167, 144.3167, "Grave", "Bayside site since 1860s.", "gravestone"],
+      ["Barwon Heads Cemetery", -38.2833, 144.4833, "Grave", "Seaside graves from 1870s.", "gravestone"]
     ];
 
     function initMap() {
@@ -224,18 +230,21 @@
           icon: icon
         });
 
-        const infoWindow = new google.maps.InfoWindow({
-          content: `
-            <div style="max-width:260px; color:#e0d8c3; background:#1a1a1a; padding:10px; border:2px solid #4a3f35; border-radius:8px; position:relative;">
-              <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${isCemetery ? "🪦" : "👻"}</div>
-              <div style="margin-left:50px;">
-                <b style="font-size:1.1em; color:#b8a07e;">${h[0]}</b><br>
-                <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
-                <p style="margin:4px 0; font-size:0.8em; font-style:italic; color:#8c7a5e;">${h[4]}</p>
-              </div>
-            </div>
-          `
-        });
+        let content = `
+          <div style="max-width:260px; color:#e0d8c3; background:#1a1a1a; padding:10px; border:2px solid #4a3f35; border-radius:8px; position:relative;">
+            <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${isCemetery ? "Grave" : "Ghost"}</div>
+            <div style="margin-left:50px;">
+              <b style="font-size:1.1em; color:#b8a07e;">${h[0]}</b><br>
+              <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
+              <p style="margin:4px 0; font-size:0.8em; font-style:italic; color:#8c7a5e;">${h[4]}</p>`;
+
+        if (!isCemetery && h[6]) {
+          content += `<br><a href="${h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>`;
+        }
+
+        content += `</div></div>`;
+
+        const infoWindow = new google.maps.InfoWindow({ content });
 
         marker.addListener("click", () => {
           if (currentInfoWindow) currentInfoWindow.close();
@@ -246,17 +255,12 @@
     }
 
     document.getElementById("gps").onclick = () => {
-      if (!navigator.geolocation) {
-        alert("GPS not supported.");
-        return;
-      }
       navigator.geolocation.getCurrentPosition(
         pos => {
-          const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          map.setCenter(userPos);
-          map.setZoom(12);
+          map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          map.setZoom(14);
         },
-        err => alert("GPS Error: " + (err.message || "Try again")),
+        err => alert("GPS Error: " + err.message),
         { enableHighAccuracy: true, timeout: 30000 }
       );
     };
