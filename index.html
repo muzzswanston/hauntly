@@ -139,7 +139,7 @@
 <body>
   <header>
     <h1>Hauntly</h1>
-    <p>49 Haunted Locations: Tours + Victoria Cemeteries</p>
+    <p>37 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
 
@@ -161,19 +161,19 @@
     let currentInfoWindow = null;
 
     const haunts = [
-      // === ORIGINAL TOURS ===
-      ["Adelaide Gaol", -34.9170, 138.6020, "👻", "Australia's longest-running gaol with tours and paranormal hunts.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/adelaide-gaol-ghost-tour/"],
-      ["Q Station", -33.8000, 151.2167, "👻", "Quarantine Station ghostly encounters tour in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/q-station-ghost-tour/"],
-      ["The Rocks", -33.8590, 151.2093, "👻", "Haunted pubs and dark history walking tour in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/the-rocks-ghost-tour/"],
-      ["Old Melbourne Gaol", -37.8136, 144.9631, "👻", "Night tour of Ned Kelly's prison with ghost stories.", "ghost", "https://www.adrenaline.com.au/melbourne/ghost-tours/old-melbourne-gaol-night-tour/"],
-      ["Fremantle Prison", -32.0560, 115.7486, "👻", "Torchlight tour of haunted Fremantle Prison.", "ghost", "https://www.adrenaline.com.au/perth/ghost-tours/fremantle-prison-torchlight-tour/"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "👻", "Brisbane's original ghost tour at historic cemetery.", "ghost", "https://www.adrenaline.com.au/brisbane/ghost-tours/toowong-cemetery-ghost-tour/"],
-      ["Port Arthur", -43.1500, 147.8500, "👻", "Iconic Tasmanian convict site with ghost tours.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/port-arthur-ghost-tour/"],
-      ["Willow Court Asylum", -42.7800, 147.4900, "👻", "Australia's oldest mental asylum ghost tour.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/willow-court-ghost-tour/"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "👻", "Historic Hobart prison ghost tour.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/hobart-penitentiary-ghost-tour/"],
-      ["Ballarat Ghost Tour", -37.5635, 143.8560, "👻", "Gold rush era haunted sites walking tour.", "ghost", "https://www.adrenaline.com.au/ballarat/ghost-tours/ballarat-ghost-tour/"],
-      ["Aradale Asylum", -37.2833, 142.9333, "👻", "Australia's largest abandoned asylum ghost tour.", "ghost", "https://www.adrenaline.com.au/ararat/ghost-tours/aradale-ghost-tour/"],
-      ["Monte Cristo Homestead", -34.4833, 148.0167, "👻", "Australia's most haunted house tour.", "ghost", "https://www.adrenaline.com.au/junee/ghost-tours/monte-cristo-ghost-tour/"],
+      // === TOURS LOCATIONS ===
+      ["Adelaide Gaol", -34.9170, 138.6020, "Ghost", "Australia's longest-running gaol with tours, dark secrets, and paranormal hunts.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/adelaide-gaol-ghost-tour/"],
+      ["Bishops Palace", -37.2400, 144.4400, "Ghost", "Site for paranormal tours in Kyneton.", "ghost", "https://www.adrenaline.com.au/kyneton/ghost-tours/bishops-palace-paranormal/"],
+      ["Q Station", -33.8000, 151.2167, "Ghost", "Quarantine Station tours and encounters in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/q-station-ghost-tour/"],
+      ["Hobart Penitentiary", -42.8800, 147.3300, "Ghost", "Historic penitentiary with tours by National Trust Tasmania.", "ghost", "https://www.adrenaline.com.au/hobart/ghost-tours/hobart-penitentiary-ghost-tour/"],
+      ["The Rocks", -33.8590, 151.2093, "Ghost", "Haunted pubs, cellars, and dark past tours in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/the-rocks-ghost-tour/"],
+      ["Haunted Melbourne", -37.8136, 144.9631, "Ghost", "90-minute guided walk through Melbourne's haunted alleys, revealing opium dens, murders, and body-snatching secrets.", "ghost", "https://www.adrenaline.com.au/en/melbourne/the-old-melbourne-ghost-tour?srsltid=AfmBOopJ16-agq7Tt1WJBzLzIbFYr5EoBYnrjutb2dQnBYKgs6vKEUC8"],
+      ["Berrima Courthouse", -34.5167, 148.5500, "Ghost", "Interactive tours at historic courthouse by APPI Ghost Hunts.", "ghost", "https://www.adrenaline.com.au/berrima/ghost-tours/berrima-courthouse-ghost-tour/"],
+      ["Military Gaol", -42.8800, 147.3300, "Ghost", "Paranormal tours at Tasmania's most haunted military site.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/military-gaol-paranormal-tour/"],
+      ["Daylesford Lockup", -37.3464, 144.1436, "Ghost", "Paranormal tours at historic lockup by Kyneton Paranormal.", "ghost", "https://www.adrenaline.com.au/daylesford/ghost-tours/daylesford-lockup-ghost-tour/"],
+      ["Toowong Cemetery", -27.4750, 152.9786, "Ghost", "Original tour at cemetery in Brisbane.", "ghost", "https://www.adrenaline.com.au/brisbane/ghost-tours/toowong-cemetery-ghost-tour/"],
+      ["Willow Court Asylum", -42.7800, 147.4900, "Ghost", "Tours at historic asylum by Tasmania's Most Haunted.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/willow-court-ghost-tour/"],
+      ["Port Adelaide Ghosts", -34.8500, 138.5300, "Ghost", "Self-guided walking tours of port ghosts by Allen Tiller.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/port-adelaide-ghosts-walking-tour/"],
 
       // === 25 VICTORIA CEMETERIES (no link) ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
