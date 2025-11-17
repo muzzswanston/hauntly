@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Gothic Ink + 42 Locations</title>
+  <title>Hauntly – Gothic Ink</title>
 
-  <!-- Google Maps API -->
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!API_KEY) {
@@ -20,167 +19,57 @@
   </script>
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { 
-      background:#0a0a0a; 
-      color:#e0d8c3; 
-      font-family: 'Georgia', serif;
-      overflow: hidden;
-    }
-    header { 
-      background:#1a1a1a; 
-      padding:1rem; 
-      text-align:center; 
-      border-bottom:3px double #4a3f35; 
-      position:relative; z-index:10;
-    }
-    h1 { 
-      font-size:1.8rem; 
-      margin:0; 
-      color:#b8a07e; 
-      text-shadow:0 0 8px #4a3f35; 
-      letter-spacing:2px;
-    }
-    #gps { 
-      background:#4a3f35; 
-      color:#e0d8c3; 
-      border:2px solid #8c7a5e; 
-      padding:.6rem 1.2rem; 
-      border-radius:6px; 
-      margin-top:.5rem; 
-      cursor:pointer; 
-      font-weight:bold;
-    }
-    #map-container { 
-      position:relative; 
-      height:80vh; 
-      width:100%; 
-      overflow:hidden;
-    }
-    #map { height:100%; width:100%; z-index:0; }
-    footer { 
-      text-align:center; 
-      padding:.5rem; 
-      font-size:.8rem; 
-      background:#1a1a1a; 
-      color:#8c7a5e; 
-      border-top:2px solid #4a3f35; 
-      position:relative; z-index:10;
-    }
-
-    /* Gothic Ink Border */
-    .gothic-border {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      border: 15px solid transparent;
-      border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10,10 L90,10 L90,90 L10,90 Z M5,5 L95,5 L95,95 L5,95" fill="none" stroke="%234a3f35" stroke-width="8"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%238c7a5e" stroke-width="3"/></svg>') 30 stretch;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    /* Ethereal Mist */
-    .mist {
-      position: absolute;
-      top: 0; left: 0;
-      width: 200%; height: 200%;
-      pointer-events: none;
-      background: radial-gradient(circle, rgba(200,220,255,0.08) 0%, transparent 70%);
-      opacity: 0.6;
-      animation: swirl 30s infinite linear;
-      z-index: 1;
-      will-change: transform;
-    }
-    .mist:nth-child(2) { animation-delay: -10s; opacity: 0.4; }
-    .mist:nth-child(3) { animation-delay: -20s; opacity: 0.3; }
-
-    @keyframes swirl {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      100% { transform: translate(50vw, -30vh) rotate(360deg); }
-    }
-
-    /* Wandering Ghosts */
-    .ghost {
-      position: absolute;
-      width: 70px; height: 100px;
-      background: radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%);
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-      opacity: 0.6;
-      z-index: 2;
-      animation: wander 25s infinite ease-in-out;
-      filter: drop-shadow(0 0 10px rgba(200,220,255,0.8));
-    }
-    .ghost:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
-    .ghost:nth-child(2) { top: 50%; left: 75%; animation-delay: -7s; }
-    .ghost:nth-child(3) { top: 70%; left: 30%; animation-delay: -14s; }
-
-    @keyframes wander {
-      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
-      50% { transform: translateY(-40px) rotate(8deg); opacity: 0.8; }
-    }
-
-    .book-btn {
-      background: #ff4500;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-weight: bold;
-      margin-top: 8px;
-      cursor: pointer;
-    }
-
-    @media (max-width:600px) { 
-      h1{font-size:1.4rem} 
-      #map-container{height:70vh} 
-      .ghost { width:50px; height:70px; }
-    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#0a0a0a;color:#e0d8c3;font-family:'Georgia',serif;overflow:hidden;}
+    header{background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;position:relative;z-index:10;}
+    h1{font-size:1.8rem;margin:0;color:#b8a07e;text-shadow:0 0 8px #4a3f35;letter-spacing:2px;}
+    #gps{background:#4a3f35;color:#e0d8c3;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin-top:.5rem;cursor:pointer;font-weight:bold;}
+    #map-container{position:relative;height:80vh;width:100%;overflow:hidden;}
+    #map{height:100%;width:100%;z-index:0;}
+    footer{text-align:center;padding:.5rem;font-size:.8rem;background:#1a1a1a;color:#8c7a5e;border-top:2px solid #4a3f35;position:relative;z-index:10;}
+    .gothic-border{position:absolute;top:0;left:0;right:0;bottom:0;border:15px solid transparent;border-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10,10 L90,10 L90,90 L10,90 Z M5,5 L95,5 L95,95 L5,95" fill="none" stroke="%234a3f35" stroke-width="8"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%238c7a5e" stroke-width="3"/></svg>') 30 stretch;pointer-events:none;z-index:3;}
+    .mist{position:absolute;top:0;left:0;width:200%;height:200%;pointer-events:none;background:radial-gradient(circle,rgba(200,220,255,0.08)0%,transparent 70%);opacity:0.6;animation:swirl 30s infinite linear;z-index:1;will-change:transform;}
+    .mist:nth-child(2){animation-delay:-10s;opacity:0.4;}.mist:nth-child(3){animation-delay:-20s;opacity:0.3;}
+    @keyframes swirl{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(50vw,-30vh) rotate(360deg)}}
+    .ghost{position:absolute;width:70px;height:100px;background:radial-gradient(ellipse,rgba(255,255,255,0.4)0%,transparent 70%);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0.6;z-index:2;animation:wander 25s infinite ease-in-out;filter:drop-shadow(0 0 10px rgba(200,220,255,0.8));}
+    .ghost:nth-child(1){top:15%;left:10%;animation-delay:0s;}.ghost:nth-child(2){top:50%;left:75%;animation-delay:-7s;}.ghost:nth-child(3){top:70%;left:30%;animation-delay:-14s;}
+    @keyframes wander{0%,100%{transform:translateY(0) rotate(0deg);opacity:0.6}50%{transform:translateY(-40px) rotate(8deg);opacity:0.8}}
+    .book-btn{background:#ff4500;color:white;border:none;padding:8px 16px;border-radius:4px;font-weight:bold;margin-top:8px;cursor:pointer;}
+    @media (max-width:600px){h1{font-size:1.4rem}#map-container{height:70vh}.ghost{width:50px;height:70px;}}
   </style>
 </head>
 <body>
   <header>
     <h1>Hauntly</h1>
-    <p>42 Haunted Locations: Tours + Victoria Cemeteries</p>
+    <p>34 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
 
   <div id="map-container">
     <div id="map"></div>
     <div class="gothic-border"></div>
-    <div class="mist"></div>
-    <div class="mist"></div>
-    <div class="mist"></div>
-    <div class="ghost"></div>
-    <div class="ghost"></div>
-    <div class="ghost"></div>
+    <div class="mist"></div><div class="mist"></div><div class="mist"></div>
+    <div class="ghost"></div><div class="ghost"></div><div class="ghost"></div>
   </div>
 
   <footer>Tap pins for haunt details.</footer>
 
   <script>
-    let map;
-    let currentInfoWindow = null;
+    let map, currentInfoWindow = null;
 
     const haunts = [
-      // === 17 GHOST TOURS (with direct Adrenaline links) ===
-      ["Adelaide Gaol Ghost Tour", -34.9170, 138.6020, "Ghost", "Explore Australia's longest-running gaol with dark secrets and paranormal hunts.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/adelaide-gaol-ghost-tour/"],
-      ["Q Station Ghostly Encounters", -33.8000, 151.2167, "Ghost", "Interactive ghost tour at Sydney's historic quarantine station.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/q-station-ghost-tour/"],
-      ["The Rocks Haunted Tour", -33.8590, 151.2093, "Ghost", "90-minute walk through Sydney's haunted colonial district.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/the-rocks-ghost-tour/"],
-      ["Haunted Melbourne Walking Tour", -37.8136, 144.9631, "Ghost", "90-minute walk through Melbourne's haunted alleys with murder and body-snatching stories.", "ghost", "https://www.adrenaline.com.au/en/melbourne/the-old-melbourne-ghost-tour?srsltid=AfmBOopJ16-agq7Tt1WJBzLzIbFYr5EoBYnrjutb2dQnBYKgs6vKEUC8"],
-      ["Fremantle Prison Torchlight Tour", -32.0560, 115.7486, "Ghost", "Torchlight tour of UNESCO-listed haunted prison.", "ghost", "https://www.adrenaline.com.au/perth/ghost-tours/fremantle-prison-torchlight-tour/"],
-      ["Monte Cristo Homestead Ghost Tour", -34.4833, 148.0167, "Ghost", "Tour Australia's most haunted house.", "ghost", "https://www.adrenaline.com.au/junee/ghost-tours/monte-cristo-ghost-tour/"],
-      ["Port Arthur Ghost Tour", -43.1500, 147.8500, "Ghost", "Iconic Tasmanian convict site ghost tour.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/port-arthur-ghost-tour/"],
-      ["Aradale Asylum Ghost Tour", -37.2833, 142.9333, "Ghost", "Explore Australia's largest abandoned asylum.", "ghost", "https://www.adrenaline.com.au/ararat/ghost-tours/aradale-ghost-tour/"],
-      ["Ballarat Ghost Tour", -37.5635, 143.8560, "Ghost", "Gold rush era haunted sites walking tour.", "ghost", "https://www.adrenaline.com.au/ballarat/ghost-tours/ballarat-ghost-tour/"],
-      ["Toowong Cemetery Ghost Tour", -27.4750, 152.9786, "Ghost", "Brisbane's original cemetery ghost tour.", "ghost", "https://www.adrenaline.com.au/brisbane/ghost-tours/toowong-cemetery-ghost-tour/"],
-      ["Old Melbourne Gaol Night Tour", -37.8136, 144.9631, "Ghost", "Lantern-lit tour of Ned Kelly's prison.", "ghost", "https://www.adrenaline.com.au/melbourne/ghost-tours/old-melbourne-gaol-night-tour/"],
-      ["Willow Court Asylum Ghost Tour", -42.7800, 147.4900, "Ghost", "Australia's oldest mental asylum ghost tour.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/willow-court-ghost-tour/"],
-      ["Berrima Courthouse Ghost Tour", -34.5167, 148.5500, "Ghost", "Interactive tour at haunted historic courthouse.", "ghost", "https://www.adrenaline.com.au/new-south-wales/ghost-tours/berrima-courthouse-ghost-tour/"],
-      ["Hobart Penitentiary Ghost Tour", -42.8800, 147.3300, "Ghost", "Lantern-lit tour of Tasmania's haunted prison.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/hobart-penitentiary-ghost-tour/"],
-      ["Daylesford Lockup Ghost Tour", -37.3464, 144.1436, "Ghost", "Paranormal tour at historic lockup.", "ghost", "https://www.adrenaline.com.au/victoria/ghost-tours/daylesford-lockup-ghost-tour/"],
-      ["Port Adelaide Ghosts Walking Tour", -34.8500, 138.5300, "Ghost", "Self-guided tour of haunted Port Adelaide.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/port-adelaide-ghosts-walking-tour/"],
-      ["Bishops Palace Paranormal Tour", -37.2400, 144.4400, "Ghost", "Paranormal investigation in Kyneton palace.", "ghost", "https://www.adrenaline.com.au/victoria/ghost-tours/bishops-palace-paranormal/"],
+      // === 9 CURRENT ADRENALINE GHOST TOURS ===
+      ["Ghosts of the Old City – Williamstown", -37.8615, 144.8980, "Ghost", "90-minute lantern-lit walk through Williamstown's haunted pubs, morgues and gaol.", "ghost", "https://www.adrenaline.com.au/en/melbourne/ghosts-of-the-old-city-williamstown"],
+      ["Haunted Sydney Ghost Tour", -33.8590, 151.2093, "Ghost", "90-minute guided walk through Sydney’s most haunted sites in The Rocks.", "ghost", "https://www.adrenaline.com.au/en/sydney/haunted-sydney-ghost-tour"],
+      ["Eynesbury Homestead Dinner & Ghost Tour", -37.7910, 144.5660, "Ghost", "3-hour dinner + ghost tour at historic haunted homestead.", "ghost", "https://www.adrenaline.com.au/en/melbourne/eynesbury-homestead-dinner-and-ghost-tour"],
+      ["Altona Homestead Ghost Evening Tour", -37.8670, 144.8320, "Ghost", "Evening ghost tour of Melbourne’s most haunted homestead.", "ghost", "https://www.adrenaline.com.au/en/melbourne/altona-homestead-ghost-evening-tour"],
+      ["Toowong Cemetery Ghost Tour", -27.4750, 152.9786, "Ghost", "2-hour night tour of Brisbane’s historic and haunted cemetery.", "ghost", "https://www.adrenaline.com.au/en/brisbane/2-hour-toowong-cemetery-ghost-tours"],
+      ["South Brisbane Cemetery Ghost Tour", -27.4870, 153.0250, "Ghost", "2-hour guided ghost tour of South Brisbane’s haunted cemetery.", "ghost", "https://www.adrenaline.com.au/en/brisbane/2-hour-south-brisbane-cemetery-ghost-tours"],
+      ["Sydney Haunted Ghost Pub Tour", -33.8590, 151.2093, "Ghost", "90-minute haunted pub crawl through Sydney’s historic Rocks district.", "ghost", "https://www.adrenaline.com.au/en/sydney/sydney-haunted-ghost-pub-tour-90-minutes"],
+      ["Melbourne Spirits & Ales Haunted Pub Tour", -37.8136, 144.9631, "Ghost", "2.5-hour haunted pub tour with drinks and ghost stories.", "ghost", "https://www.adrenaline.com.au/en/melbourne/melbourne-spirits-ales-haunted-pub-tour"],
+      ["Haunted Brisbane CBD Walking Ghost Tour", -27.4698, 153.0251, "Ghost", "2-hour guided walk through Brisbane’s haunted CBD.", "ghost", "https://www.adrenaline.com.au/en/brisbane/2-hour-haunted-brisbane-cbd-walking-ghost-tour"],
 
-      // === 25 VICTORIA CEMETERIES (no link) ===
+      // === 25 VICTORIA CEMETERIES ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
       ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery, established 1855.", "gravestone"],
       ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards since 1856.", "gravestone"],
@@ -213,17 +102,17 @@
         zoom: 10,
         center: { lat: -37.8136, lng: 144.9631 },
         styles: [
-          { elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
-          { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
-          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-          { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-          { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
-          { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+          {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
+          {elementType:"labels.text.stroke",stylers:[{color:"#1a1a1a"}]},
+          {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
+          {featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},
+          {featureType:"road",elementType:"labels.text.fill",stylers:[{color:"#9ca5b3"}]},
+          {featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}
         ]
       });
 
       haunts.forEach(h => {
-        const isCemetery = h[5] === "gravestone" || h[0].toLowerCase().includes("cemetery");
+        const isCemetery = h[5] === "gravestone";
         const icon = isCemetery 
           ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iIzk0NThmZiIgc3Ryb2tlPSIjN2EwMGRkIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4="
           : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmNDU0NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
@@ -236,20 +125,19 @@
         });
 
         let content = `
-          <div style="max-width:260px; color:#e0d8c3; background:#1a1a1a; padding:10px; border:2px solid #4a3f35; border-radius:8px; position:relative;">
-            <div style="position:absolute; top:8px; left:8px; font-size:1.8em;">${isCemetery ? "Grave" : "Ghost"}</div>
+          <div style="max-width:260px;color:#e0d8c3;background:#1a1a1a;padding:10px;border:2px solid #4a3f35;border-radius:8px;position:relative;">
+            <div style="position:absolute;top:8px;left:8px;font-size:1.8em;">${isCemetery?"Grave":"Ghost"}</div>
             <div style="margin-left:50px;">
-              <b style="font-size:1.1em; color:#b8a07e;">${h[0]}</b><br>
-              <p style="margin:4px 0; font-size:0.9em;">${h[3]}</p>
-              <p style="margin:4px 0; font-size:0.8em; font-style:italic; color:#8c7a5e;">${h[4]}</p>`;
+              <b style="font-size:1.1em;color:#b8a07e;">${h[0]}</b><br>
+              <p style="margin:4px 0;font-size:0.9em;">${h[3]}</p>
+              <p style="margin:4px 0;font-size:0.8em;font-style:italic;color:#8c7a5e;">${h[4]}</p>`;
 
         if (!isCemetery && h[6]) {
           content += `<br><a href="${h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>`;
         }
-
         content += `</div></div>`;
 
-        const infoWindow = new google.maps.InfoWindow({ content });
+        const infoWindow = new google.maps.InfoWindow({content});
 
         marker.addListener("click", () => {
           if (currentInfoWindow) currentInfoWindow.close();
@@ -261,12 +149,9 @@
 
     document.getElementById("gps").onclick = () => {
       navigator.geolocation.getCurrentPosition(
-        pos => {
-          map.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          map.setZoom(14);
-        },
-        err => alert("GPS Error: " + err.message),
-        { enableHighAccuracy: true, timeout: 30000 }
+        pos => { map.setCenter({lat:pos.coords.latitude,lng:pos.coords.longitude}); map.setZoom(14); },
+        err => alert("GPS Error: "+err.message),
+        {enableHighAccuracy:true,timeout:30000}
       );
     };
   </script>
