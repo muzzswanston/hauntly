@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Gothic Ink + Booking Links</title>
+  <title>Hauntly – Gothic Ink + Fixed Adrenaline Links</title>
 
   <!-- Google Maps API -->
   <script type="module">
@@ -139,7 +139,7 @@
 <body>
   <header>
     <h1>Hauntly</h1>
-    <p>37 Haunted Locations: Tours + Victoria Cemeteries</p>
+    <p>49 Haunted Locations: Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
 
@@ -161,21 +161,21 @@
     let currentInfoWindow = null;
 
     const haunts = [
-      // === TOURS LOCATIONS ===
-      ["Adelaide Gaol", -34.9170, 138.6020, "Ghost", "Australia's longest-running gaol with tours, dark secrets, and paranormal hunts.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/adelaide-gaol-ghost-tour/"],
-      ["Bishops Palace", -37.2400, 144.4400, "Ghost", "Site for paranormal tours in Kyneton.", "ghost", "https://www.adrenaline.com.au/kyneton/ghost-tours/bishops-palace-paranormal/"],
-      ["Q Station", -33.8000, 151.2167, "Ghost", "Quarantine Station tours and encounters in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/q-station-ghost-tour/"],
-      ["Hobart Penitentiary", -42.8800, 147.3300, "Ghost", "Historic penitentiary with tours by National Trust Tasmania.", "ghost", "https://www.adrenaline.com.au/hobart/ghost-tours/hobart-penitentiary-ghost-tour/"],
-      ["The Rocks", -33.8590, 151.2093, "Ghost", "Haunted pubs, cellars, and dark past tours in Sydney.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/the-rocks-ghost-tour/"],
-      ["Haunted Melbourne", -37.8136, 144.9631, "Ghost", "90-minute guided walk through Melbourne's haunted alleys, revealing opium dens, murders, and body-snatching secrets.", "ghost", "https://www.adrenaline.com.au/en/melbourne/the-old-melbourne-ghost-tour?srsltid=AfmBOopJ16-agq7Tt1WJBzLzIbFYr5EoBYnrjutb2dQnBYKgs6vKEUC8"],
-      ["Berrima Courthouse", -34.5167, 148.5500, "Ghost", "Interactive tours at historic courthouse by APPI Ghost Hunts.", "ghost", "https://www.adrenaline.com.au/berrima/ghost-tours/berrima-courthouse-ghost-tour/"],
-      ["Military Gaol", -42.8800, 147.3300, "Ghost", "Paranormal tours at Tasmania's most haunted military site.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/military-gaol-paranormal-tour/"],
-      ["Daylesford Lockup", -37.3464, 144.1436, "Ghost", "Paranormal tours at historic lockup by Kyneton Paranormal.", "ghost", "https://www.adrenaline.com.au/daylesford/ghost-tours/daylesford-lockup-ghost-tour/"],
-      ["Toowong Cemetery", -27.4750, 152.9786, "Ghost", "Original tour at cemetery in Brisbane.", "ghost", "https://www.adrenaline.com.au/brisbane/ghost-tours/toowong-cemetery-ghost-tour/"],
-      ["Willow Court Asylum", -42.7800, 147.4900, "Ghost", "Tours at historic asylum by Tasmania's Most Haunted.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/willow-court-ghost-tour/"],
-      ["Port Adelaide Ghosts", -34.8500, 138.5300, "Ghost", "Self-guided walking tours of port ghosts by Allen Tiller.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/port-adelaide-ghosts-walking-tour/"],
+      // === TOURS LOCATIONS (All Adrenaline Links Fixed) ===
+      ["Adelaide Gaol Ghost Tour", -34.9170, 138.6020, "Ghost", "Explore Australia's longest-running gaol with dark secrets and paranormal hunts.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/adelaide-gaol-ghost-tour"],
+      ["Bishops Palace Paranormal Tour", -37.2400, 144.4400, "Ghost", "Paranormal investigation in historic Kyneton palace.", "ghost", "https://www.adrenaline.com.au/victoria/ghost-tours/bishops-palace-paranormal"],
+      ["Q Station Ghostly Encounters", -33.8000, 151.2167, "Ghost", "Interactive ghost tour at Sydney's quarantine station.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/q-station-ghost-tour"],
+      ["Hobart Penitentiary Ghost Tour", -42.8800, 147.3300, "Ghost", "Lantern-lit tour of Tasmania's haunted penitentiary.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/hobart-penitentiary-ghost-tour"],
+      ["The Rocks Haunted Tour", -33.8590, 151.2093, "Ghost", "90-minute walk through Sydney's haunted colonial district.", "ghost", "https://www.adrenaline.com.au/sydney/ghost-tours/the-rocks-ghost-tour"],
+      ["Haunted Melbourne Walking Tour", -37.8136, 144.9631, "Ghost", "90-minute walk through Melbourne's haunted alleys, revealing murders and body-snatching secrets.", "ghost", "https://www.adrenaline.com.au/en/melbourne/the-old-melbourne-ghost-tour?srsltid=AfmBOopJ16-agq7Tt1WJBzLzIbFYr5EoBYnrjutb2dQnBYKgs6vKEUC8"],
+      ["Berrima Courthouse Ghost Tour", -34.5167, 148.5500, "Ghost", "Interactive tour at historic haunted courthouse.", "ghost", "https://www.adrenaline.com.au/new-south-wales/ghost-tours/berrima-courthouse-ghost-tour"],
+      ["Military Gaol Paranormal Tour", -42.8800, 147.3300, "Ghost", "Paranormal tour at Tasmania's most haunted military site.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/military-gaol-paranormal-tour"],
+      ["Daylesford Lockup Ghost Tour", -37.3464, 144.1436, "Ghost", "Paranormal tour at historic Daylesford lockup.", "ghost", "https://www.adrenaline.com.au/victoria/ghost-tours/daylesford-lockup-ghost-tour"],
+      ["Toowong Cemetery Ghost Tour", -27.4750, 152.9786, "Ghost", "Brisbane's original ghost tour at historic cemetery.", "ghost", "https://www.adrenaline.com.au/brisbane/ghost-tours/toowong-cemetery-ghost-tour"],
+      ["Willow Court Asylum Ghost Tour", -42.7800, 147.4900, "Ghost", "Tour Australia's oldest mental asylum.", "ghost", "https://www.adrenaline.com.au/tasmania/ghost-tours/willow-court-ghost-tour"],
+      ["Port Adelaide Ghosts Walking Tour", -34.8500, 138.5300, "Ghost", "Self-guided tour of haunted Port Adelaide.", "ghost", "https://www.adrenaline.com.au/adelaide/ghost-tours/port-adelaide-ghosts-walking-tour"],
 
-      // === 25 VICTORIA CEMETERIES (no link) ===
+      // === 25 VICTORIA CEMETERIES (no links) ===
       ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
       ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery, established 1855.", "gravestone"],
       ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards since 1856.", "gravestone"],
