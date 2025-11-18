@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Gothic Ink</title>
+  <title>Hauntly – Gothic Ink + Menu</title>
 
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -12,8 +12,7 @@
     } else {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap`;
-      script.async = true;
-      script.defer = true;
+      script.async = true; script.defer = true;
       document.head.appendChild(script);
     }
   </script>
@@ -21,12 +20,21 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     body{background:#0a0a0a;color:#e0d8c3;font-family:'Georgia',serif;overflow:hidden;}
-    header{background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;position:relative;z-index:10;}
-    h1{font-size:1.8rem;margin:0;color:#b8a07e;text-shadow:0 0 8px #4a3f35;letter-spacing:2px;}
+    header{position:relative;background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;z-index:10;}
+    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;letter-spacing:2px;}
     #gps{background:#4a3f35;color:#e0d8c3;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin-top:.5rem;cursor:pointer;font-weight:bold;}
     #map-container{position:relative;height:80vh;width:100%;overflow:hidden;}
     #map{height:100%;width:100%;z-index:0;}
-    footer{text-align:center;padding:.5rem;font-size:.8rem;background:#1a1a1a;color:#8c7a5e;border-top:2px solid #4a3f35;position:relative;z-index:10;}
+    footer{text-align:center;padding:.5rem;font-size:.8rem;background:#1a1a1a;color:#8c7a5e;border-top:2px solid #4a3f35;z-index:10;}
+
+    /* Hamburger Menu */
+    #menu-btn{position:absolute;top:1.2rem;left:1rem;font-size:2rem;cursor:pointer;z-index:20;color:#b8a07e;}
+    #sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#1a1a1a;border-right:3px double #4a3f35;transition:left .4s;z-index:15;padding:6rem 1.5rem 2rem;}
+    #sidebar.open{left:0;}
+    .menu-item{margin:1.5rem 0;font-size:1.3rem;}
+    .menu-item a{color:#e0d8c3;text-decoration:none;}
+    .menu-item a:hover{color:#ff4500;}
+
     .gothic-border{position:absolute;top:0;left:0;right:0;bottom:0;border:15px solid transparent;border-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10,10 L90,10 L90,90 L10,90 Z M5,5 L95,5 L95,95 L5,95" fill="none" stroke="%234a3f35" stroke-width="8"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%238c7a5e" stroke-width="3"/></svg>') 30 stretch;pointer-events:none;z-index:3;}
     .mist{position:absolute;top:0;left:0;width:200%;height:200%;pointer-events:none;background:radial-gradient(circle,rgba(200,220,255,0.08)0%,transparent 70%);opacity:0.6;animation:swirl 30s infinite linear;z-index:1;will-change:transform;}
     .mist:nth-child(2){animation-delay:-10s;opacity:0.4;}.mist:nth-child(3){animation-delay:-20s;opacity:0.3;}
@@ -39,6 +47,18 @@
   </style>
 </head>
 <body>
+  <!-- Hamburger Button -->
+  <div id="menu-btn">Menu</div>
+
+  <!-- Slide-in Menu -->
+  <div id="sidebar">
+    <div class="menu-item"><a href="#">Home</a></div>
+    <div class="menu-item"><a href="#">Tours</a></div>
+    <div class="menu-item"><a href="#">Cemeteries</a></div>
+    <div class="menu-item"><a href="#">Podcasts <small>(coming soon)</small></a></div>
+    <div class="menu-item"><a href="#">About</a></div>
+  </div>
+
   <header>
     <h1>Hauntly</h1>
     <p>34 Haunted Locations: Tours + Victoria Cemeteries</p>
@@ -55,10 +75,14 @@
   <footer>Tap pins for haunt details.</footer>
 
   <script>
+    // Menu toggle
+    document.getElementById("menu-btn").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+
     let map, currentInfoWindow = null;
 
     const haunts = [
-      // === 9 CURRENT ADRENALINE GHOST TOURS ===
       ["Ghosts of the Old City – Williamstown", -37.8615, 144.8980, "Ghost", "90-minute lantern-lit walk through Williamstown's haunted pubs, morgues and gaol.", "ghost", "https://www.adrenaline.com.au/en/melbourne/ghosts-of-the-old-city-williamstown"],
       ["Haunted Sydney Ghost Tour", -33.8590, 151.2093, "Ghost", "90-minute guided walk through Sydney’s most haunted sites in The Rocks.", "ghost", "https://www.adrenaline.com.au/en/sydney/haunted-sydney-ghost-tour"],
       ["Eynesbury Homestead Dinner & Ghost Tour", -37.7910, 144.5660, "Ghost", "3-hour dinner + ghost tour at historic haunted homestead.", "ghost", "https://www.adrenaline.com.au/en/melbourne/eynesbury-homestead-dinner-and-ghost-tour"],
@@ -69,7 +93,7 @@
       ["Melbourne Spirits & Ales Haunted Pub Tour", -37.8136, 144.9631, "Ghost", "2.5-hour haunted pub tour with drinks and ghost stories.", "ghost", "https://www.adrenaline.com.au/en/melbourne/melbourne-spirits-ales-haunted-pub-tour"],
       ["Haunted Brisbane CBD Walking Ghost Tour", -27.4698, 153.0251, "Ghost", "2-hour guided walk through Brisbane’s haunted CBD.", "ghost", "https://www.adrenaline.com.au/en/brisbane/2-hour-haunted-brisbane-cbd-walking-ghost-tour"],
 
-      // === 25 VICTORIA CEMETERIES ===
+      // 25 Victoria Cemeteries below (unchanged) …
       ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
       ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery, established 1855.", "gravestone"],
       ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards since 1856.", "gravestone"],
@@ -117,28 +141,18 @@
           ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iIzk0NThmZiIgc3Ryb2tlPSIjN2EwMGRkIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4="
           : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmNDU0NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
 
-        const marker = new google.maps.Marker({
-          position: { lat: h[1], lng: h[2] },
-          map: map,
-          title: h[0],
-          icon: icon
-        });
+        const marker = new google.maps.Marker({position:{lat:h[1],lng:h[2]},map,title:h[0],icon});
 
-        let content = `
-          <div style="max-width:260px;color:#e0d8c3;background:#1a1a1a;padding:10px;border:2px solid #4a3f35;border-radius:8px;position:relative;">
-            <div style="position:absolute;top:8px;left:8px;font-size:1.8em;">${isCemetery?"Grave":"Ghost"}</div>
-            <div style="margin-left:50px;">
-              <b style="font-size:1.1em;color:#b8a07e;">${h[0]}</b><br>
-              <p style="margin:4px 0;font-size:0.9em;">${h[3]}</p>
-              <p style="margin:4px 0;font-size:0.8em;font-style:italic;color:#8c7a5e;">${h[4]}</p>`;
-
-        if (!isCemetery && h[6]) {
-          content += `<br><a href="${h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>`;
-        }
+        let content = `<div style="max-width:260px;color:#e0d8c3;background:#1a1a1a;padding:10px;border:2px solid #4a3f35;border-radius:8px;position:relative;">
+          <div style="position:absolute;top:8px;left:8px;font-size:1.8em;">${isCemetery?"Grave":"Ghost"}</div>
+          <div style="margin-left:50px;">
+            <b style="color:#b8a07e;">${h[0]}</b><br>
+            <p style="font-size:0.9em;">${h[3]}</p>
+            <p style="font-size:0.8em;font-style:italic;color:#8c7a5e;">${h[4]}</p>`;
+        if (!isCemetery && h[6]) content += `<br><a href="${h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>`;
         content += `</div></div>`;
 
         const infoWindow = new google.maps.InfoWindow({content});
-
         marker.addListener("click", () => {
           if (currentInfoWindow) currentInfoWindow.close();
           infoWindow.open(map, marker);
@@ -149,7 +163,7 @@
 
     document.getElementById("gps").onclick = () => {
       navigator.geolocation.getCurrentPosition(
-        pos => { map.setCenter({lat:pos.coords.latitude,lng:pos.coords.longitude}); map.setZoom(14); },
+        pos => {map.setCenter({lat:pos.coords.latitude,lng:pos.coords.longitude});map.setZoom(14);},
         err => alert("GPS Error: "+err.message),
         {enableHighAccuracy:true,timeout:30000}
       );
