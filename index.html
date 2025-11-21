@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – 100% Live Adrenaline Links</title>
+  <title>Hauntly – Viator Victorian Ghost Tours</title>
 
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -18,109 +18,69 @@
   </script>
 
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:#0a0a0a;color:#e0d8c3;font-family:'Georgia',serif;overflow:hidden;}
-    header{position:relative;background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;z-index:10;}
-    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;letter-spacing:2px;}
-    #gps{background:#4a3f35;color:#e0d8c3;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin-top:.5rem;cursor:pointer;font-weight:bold;}
-    #map-container{position:relative;height:80vh;width:100%;overflow:hidden;}
-    #map{height:100%;width:100%;z-index:0;}
-    footer{text-align:center;padding:.5rem;font-size:.8rem;background:#1a1a1a;color:#8c7a5e;border-top:2px solid #4a3f35;z-index:10;}
-    #menu-btn{position:absolute;top:1.2rem;left:1rem;font-size:2rem;cursor:pointer;z-index:20;color:#b8a07e;}
-    #sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#1a1a1a;border-right:3px double #4a3f35;transition:left .4s;z-index:15;padding:6rem 1.5rem 2rem;}
-    #sidebar.open{left:0;}
-    .menu-item{margin:1.5rem 0;font-size:1.3rem;}
-    .menu-item a{color:#e0d8c3;text-decoration:none;}
-    .menu-item a:hover{color:#ff4500;}
-    .gothic-border{position:absolute;top:0;left:0;right:0;bottom:0;border:15px solid transparent;border-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10,10 L90,10 L90,90 L10,90 Z M5,5 L95,5 L95,95 L5,95" fill="none" stroke="%234a3f35" stroke-width="8"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%238c7a5e" stroke-width="3"/></svg>') 30 stretch;pointer-events:none;z-index:3;}
-    .mist{position:absolute;top:0;left:0;width:200%;height:200%;pointer-events:none;background:radial-gradient(circle,rgba(200,220,255,0.08)0%,transparent 70%);opacity:0.6;animation:swirl 30s infinite linear;z-index:1;will-change:transform;}
-    .mist:nth-child(2){animation-delay:-10s;opacity:0.4;}.mist:nth-child(3){animation-delay:-20s;opacity:0.3;}
-    @keyframes swirl{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(50vw,-30vh) rotate(360deg)}}
-    .ghost{position:absolute;width:70px;height:100px;background:radial-gradient(ellipse,rgba(255,255,255,0.4)0%,transparent 70%);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0.6;z-index:2;animation:wander 25s infinite ease-in-out;filter:drop-shadow(0 0 10px rgba(200,220,255,0.8));}
-    .ghost:nth-child(1){top:15%;left:10%;animation-delay:0s;}.ghost:nth-child(2){top:50%;left:75%;animation-delay:-7s;}.ghost:nth-child(3){top:70%;left:30%;animation-delay:-14s;}
-    @keyframes wander{0%,100%{transform:translateY(0) rotate(0deg);opacity:0.6}50%{transform:translateY(-40px) rotate(8deg);opacity:0.8}}
-    .book-btn{background:#ff4500;color:white;border:none;padding:8px 16px;border-radius:4px;font-weight:bold;margin-top:8px;cursor:pointer;}
-    @media (max-width:600px){h1{font-size:1.4rem}#map-container{height:70vh}.ghost{width:50px;height:70px;}}
+    * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
+    body { background:#0a0a0a; color:#fff; }
+    header { background:#1a1a2e; padding:1rem; text-align:center; }
+    h1 { font-size:1.4rem; margin:0; }
+    #gps { background:#533483; color:#fff; border:none; padding:.6rem 1.2rem; border-radius:8px; margin-top:.5rem; cursor:pointer; }
+    #map { height:80vh; width:100%; }
+    footer { text-align:center; padding:.5rem; font-size:.8rem; background:#16213e; }
+    .book-btn { background:#ff4500; color:#fff; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer; margin-top:0.5rem; font-size:0.8em; }
+    @media (max-width:600px) { h1{font-size:1.2rem} #map{height:70vh} }
   </style>
 </head>
 <body>
-  <div id="menu-btn">Menu</div>
-  <div id="sidebar">
-    <div class="menu-item"><a href="#">Home</a></div>
-    <div class="menu-item"><a href="#">Tours</a></div>
-    <div class="menu-item"><a href="#">Cemeteries</a></div>
-    <div class="menu-item"><a href="#">Podcasts <small>(coming soon)</small></a></div>
-    <div class="menu-item"><a href="#">About</a></div>
-  </div>
-
   <header>
     <h1>Hauntly</h1>
-    <p>43 Haunted Locations: Tours + Victoria Cemeteries</p>
+    <p>35 Haunted Locations: Viator Tours + Victoria Cemeteries</p>
     <button id="gps">Center on Me</button>
   </header>
-
-  <div id="map-container">
-    <div id="map"></div>
-    <div class="gothic-border"></div>
-    <div class="mist"></div><div class="mist"></div><div class="mist"></div>
-    <div class="ghost"></div><div class="ghost"></div><div class="ghost"></div>
-  </div>
-
+  <div id="map"></div>
   <footer>Tap pins for haunt details.</footer>
 
   <script>
-    document.getElementById("menu-btn").onclick = () => {
-      document.getElementById("sidebar").classList.toggle("open");
-    };
-
-    let map, currentInfoWindow = null;
+    let map;
+    let currentInfoWindow = null;
 
     const haunts = [
-      ["Haunted Brisbane CBD Walking Ghost Tour", -27.4698, 153.0251, "Ghost", "2-hour guided walk through Brisbane’s haunted CBD.", "ghost", "https://www.adrenaline.com.au/en/brisbane/2-hour-haunted-brisbane-cbd-walking-ghost-tour"],
-      ["Adelaide Gaol Ghost Tour", -34.9170, 138.6020, "Ghost", "Explore Australia's longest-running gaol.", "ghost", "https://www.adrenaline.com.au/en/adelaide/adelaide-gaol-ghost-tour"],
-      ["Q Station Ghostly Encounters", -33.8000, 151.2167, "Ghost", "Interactive ghost tour at Sydney's quarantine station.", "ghost", "https://www.adrenaline.com.au/en/sydney/q-station-ghost-tour"],
-      ["Haunted Sydney Ghost Tour (The Rocks)", -33.8590, 151.2093, "Ghost", "90-minute walk through Sydney's haunted Rocks district.", "ghost", "https://www.adrenaline.com.au/en/sydney/haunted-sydney-ghost-tour"],
-      ["Haunted Melbourne Walking Tour", -37.8136, 144.9631, "Ghost", "90-minute haunted alleys tour.", "ghost", "https://www.adrenaline.com.au/en/melbourne/the-old-melbourne-ghost-tour"],
-      ["Fremantle Prison Torchlight Tour", -32.0560, 115.7486, "Ghost", "Torchlight tour of haunted prison.", "ghost", "https://www.adrenaline.com.au/en/perth/fremantle-prison-torchlight-tour"],
-      ["Monte Cristo Homestead Ghost Tour", -34.4833, 148.0167, "Ghost", "Tour Australia's most haunted house.", "ghost", "https://www.adrenaline.com.au/en/junee/monte-cristo-homestead-ghost-tour"],
-      ["Port Arthur Ghost Tour", -43.1500, 147.8500, "Ghost", "Iconic Tasmanian convict site ghost tour.", "ghost", "https://www.adrenaline.com.au/en/tasmania/port-arthur-ghost-tour"],
-      ["J Ward Lunatic Asylum Ghost Tour", -37.2833, 142.9333, "Ghost", "Explore the infamous J Ward Lunatic Asylum.", "ghost", "https://www.adrenaline.com.au/en/melbourne/j-ward-lunatic-asylum-tour"],
-      ["Ballarat Ghost Tour", -37.5635, 143.8560, "Ghost", "Gold rush era haunted sites tour.", "ghost", "https://www.adrenaline.com.au/en/ballarat/ballarat-ghost-tour"],
-      ["Toowong Cemetery Ghost Tour", -27.4750, 152.9786, "Ghost", "2-hour night tour of Brisbane’s haunted cemetery.", "ghost", "https://www.adrenaline.com.au/en/brisbane/2-hour-toowong-cemetery-ghost-tours"],
-      ["Old Melbourne Gaol Night Tour", -37.8136, 144.9631, "Ghost", "Lantern-lit tour of Ned Kelly's prison.", "ghost", "https://www.adrenaline.com.au/en/melbourne/old-melbourne-gaol-night-tour"],
-      ["Willow Court Asylum Ghost Tour", -42.7800, 147.4900, "Ghost", "Australia's oldest mental asylum ghost tour.", "ghost", "https://www.adrenaline.com.au/en/tasmania/willow-court-asylum-ghost-tour"],
-      ["Berrima Courthouse Ghost Tour", -34.5167, 148.5500, "Ghost", "Interactive tour at haunted courthouse.", "ghost", "https://www.adrenaline.com.au/en/new-south-wales/berrima-courthouse-ghost-tour"],
-      ["Hobart Penitentiary Ghost Tour", -42.8800, 147.3300, "Ghost", "Lantern-lit tour of Tasmania's haunted prison.", "ghost", "https://www.adrenaline.com.au/en/tasmania/hobart-penitentiary-ghost-tour"],
-      ["Daylesford Lockup Ghost Tour", -37.3464, 144.1436, "Ghost", "Paranormal tour at historic lockup.", "ghost", "https://www.adrenaline.com.au/en/victoria/daylesford-lockup-ghost-tour"],
-      ["Port Adelaide Ghosts Walking Tour", -34.8500, 138.5300, "Ghost", "Self-guided tour of haunted Port Adelaide.", "ghost", "https://www.adrenaline.com.au/en/adelaide/port-adelaide-ghosts-walking-tour"],
-      ["Bishops Palace Paranormal Tour", -37.2400, 144.4400, "Ghost", "Paranormal investigation in Kyneton palace.", "ghost", "https://www.adrenaline.com.au/en/victoria/bishops-palace-paranormal-tour"],
+      // === 10 VICTORIAN GHOST TOURS FROM VIATOR ===
+      ["Melbourne Ghost Tour", -37.8136, 144.9631, "👻", "Hear tragic tales and ghostly legends on a 90-minute walking tour of Melbourne's haunted sites, including Old Melbourne, Williamstown, or Pentridge Prison.", "ghost", "https://www.viator.com/tours/Melbourne/Melbourne-Ghost-Tour/d384-6024MELBOURNE"],
+      ["Old Castlemaine Gaol Ghost Tour", -37.0630, 144.2170, "👻", "2-hour ghost tour at Old Castlemaine Gaol, hearing spooky tales of murderers and restless souls haunting the sandstone walls.", "ghost", "https://www.viator.com/tours/Victoria/Old-Castlemaine-Gaol-Ghost-Tour/d125-6024P5"],
+      ["Altona Homestead Ghost Tour", -37.8670, 144.8320, "👻", "90-minute evening ghost tour of Melbourne's haunted Altona Homestead, exploring its tragic history and spectral residents.", "ghost", "https://www.viator.com/tours/Victoria/Altona-Homestead-Ghost-Tour/d125-6024P15"],
+      ["Ghostly Walking Tour in Victoria", -48.4284, 123.3650, "👻", "1-hour nighttime walking tour of Victoria's haunted Bastion Square and Old Town, uncovering eccentric characters and ghostly legends.", "ghost", "https://www.viator.com/tours/Victoria/Ghostly-Walking-Tour-in-Victoria/d617-36496P1"],
+      ["Halloween Ghostly Walking Tour in Victoria", -48.4284, 123.3650, "👻", "Special Halloween edition exploring Victoria's darkest past with new spooky stories and routes through haunted streets.", "ghost", "https://www.viator.com/tours/Victoria/Ghostly-Walks-Halloween-Tour/d617-36496P4"],
+      ["Port Arthur Ghost Tour", -43.1500, 147.8500, "👻", "1.5-hour lantern-lit walking tour of Tasmania's haunted Port Arthur Historic Site, uncovering convict ghosts and paranormal activity.", "ghost", "https://www.viator.com/tours/Port-Arthur/Port-Arthur-Ghost-Tour/d32553-5774PAGT"],
+      ["Ghostly Walks Walking Tours", -48.4284, 123.3650, "👻", "Year-round 1-hour ghost walking tours of Victoria's haunted history, featuring hangings, murders, and restless spirits.", "ghost", "https://www.viator.com/tours/Victoria/Ghostly-Walks-Walking-Tours/d125-36496P1"],
+      ["Victoria Old Town and Bastion Square Tour", -48.4284, 123.3650, "👻", "Guided tour of Victoria's dark past in Old Town and Bastion Square, blending ghosts, history, and culture.", "ghost", "https://www.getyourguide.com/victoria-british-columbia-l551/victoria-old-town-bastion-square-tour-t779080/"],
+      ["Aradale Asylum Ghost Tour", -37.2833, 142.9333, "👻", "Paranormal investigation at Aradale Asylum, Australia's largest abandoned mental hospital, with ghost hunting equipment.", "ghost", "https://www.viator.com/tours/Victoria/Aradale-Asylum-Ghost-Tour/d125-6024P4"],
+      ["Old Melbourne Gaol Ghost Tour", -37.8136, 144.9631, "👻", "Night tour of Old Melbourne Gaol, site of Ned Kelly's execution, with lantern-led ghost hunts and chilling stories.", "ghost", "https://www.viator.com/tours/Melbourne/Old-Melbourne-Gaol-Ghost-Tour/d384-6024P1"],
 
-      // 25 Victoria Cemeteries (no links)
-      ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
-      ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery.", "gravestone"],
-      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards.", "gravestone"],
-      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "Grave", "Victoria's first crematorium.", "gravestone"],
-      ["Preston Cemetery", -37.7333, 145.0000, "Grave", "Founded 1864.", "gravestone"],
-      ["Heidelberg Cemetery", -37.7667, 145.0333, "Grave", "Established 1856.", "gravestone"],
-      ["Boroondara General Cemetery", -37.8037, 145.0412, "Grave", "Opened 1858 in Hawthorn.", "gravestone"],
-      ["Brighton General Cemetery", -37.9013, 145.0207, "Grave", "Laid out 1854.", "gravestone"],
-      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery.", "gravestone"],
-      ["Bunurong Memorial Park", -38.0648, 145.2004, "Grave", "Modern sanctuary opened 1994.", "gravestone"],
-      ["Berwick Cemetery", -38.0333, 145.3500, "Grave", "Rural burial ground since 1861.", "gravestone"],
-      ["Box Hill Cemetery", -37.8167, 145.1200, "Grave", "Historic site in Whitehorse.", "gravestone"],
-      ["Templestowe Cemetery", -37.7595, 145.1417, "Grave", "Established 1860.", "gravestone"],
-      ["Eltham Cemetery", -37.7266, 145.1503, "Grave", "Opened 1861.", "gravestone"],
-      ["Warrandyte Cemetery", -37.7333, 145.2000, "Grave", "Riverside graves since 1850s.", "gravestone"],
-      ["Lilydale Memorial Park", -37.7352, 145.3425, "Grave", "Yarra Ranges site since 1862.", "gravestone"],
-      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "Grave", "Modern companion cemetery.", "gravestone"],
-      ["Yarra Glen Cemetery", -37.6500, 145.3833, "Grave", "Small 1860s plot.", "gravestone"],
-      ["Healesville Cemetery", -37.6610, 145.5281, "Grave", "Bushland burial ground.", "gravestone"],
-      ["Woori Yallock Cemetery", -37.7833, 145.5000, "Grave", "Rural site from 1880s.", "gravestone"],
-      ["Cranbourne Cemetery", -38.1000, 145.0167, "Grave", "Southeast farmers' final rest.", "gravestone"],
-      ["Frankston Memorial Park", -38.1500, 145.1333, "Grave", "Coastal cemetery.", "gravestone"],
-      ["Geelong Memorial Park", -38.1500, 144.3833, "Grave", "Victoria's second-largest.", "gravestone"],
-      ["Torquay Cemetery", -38.3167, 144.3167, "Grave", "Bayside site since 1860s.", "gravestone"],
-      ["Barwon Heads Cemetery", -38.2833, 144.4833, "Grave", "Seaside graves from 1870s.", "gravestone"]
+      // === 25 VICTORIA CEMETERIES ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "🪦", "Burial site for 5 Australian Prime Ministers and over 300,000 souls since 1853.", "gravestone"],
+      ["St Kilda Cemetery", -37.8667, 144.9833, "🪦", "Victoria's oldest surviving cemetery, established 1855.", "gravestone"],
+      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "🪦", "One of Melbourne's first graveyards since 1856.", "gravestone"],
+      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "🪦", "Opened 1880 as Victoria's first crematorium.", "gravestone"],
+      ["Preston Cemetery", -37.7333, 145.0000, "🪦", "Founded 1864 for northern suburbs.", "gravestone"],
+      ["Heidelberg Cemetery", -37.7667, 145.0333, "🪦", "Established 1856, home to Yarra Valley pioneers.", "gravestone"],
+      ["Boroondara General Cemetery", -37.8037, 145.0412, "🪦", "Opened 1858 in Hawthorn.", "gravestone"],
+      ["Brighton General Cemetery", -37.9013, 145.0207, "🪦", "Laid out 1854 by Robert Hoddle.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "🪦", "Australia's largest cemetery with over 200,000 interments.", "gravestone"],
+      ["Bunurong Memorial Park", -38.0648, 145.2004, "🪦", "Modern sanctuary opened 1994.", "gravestone"],
+      ["Berwick Cemetery", -38.0333, 145.3500, "🪦", "Rural burial ground since 1861.", "gravestone"],
+      ["Box Hill Cemetery", -37.8167, 145.1200, "🪦", "Historic site in Whitehorse since the 1860s.", "gravestone"],
+      ["Templestowe Cemetery", -37.7595, 145.1417, "🪦", "Established 1860.", "gravestone"],
+      ["Eltham Cemetery", -37.7266, 145.1503, "🪦", "Opened 1861 in Nillumbik.", "gravestone"],
+      ["Warrandyte Cemetery", -37.7333, 145.2000, "🪦", "Riverside graves since 1850s.", "gravestone"],
+      ["Lilydale Memorial Park", -37.7352, 145.3425, "🪦", "Yarra Ranges site since 1862.", "gravestone"],
+      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "🪦", "Modern companion cemetery.", "gravestone"],
+      ["Yarra Glen Cemetery", -37.6500, 145.3833, "🪦", "Small 1860s plot in Yarra Valley.", "gravestone"],
+      ["Healesville Cemetery", -37.6610, 145.5281, "🪦", "Bushland burial ground since 1865.", "gravestone"],
+      ["Woori Yallock Cemetery", -37.7833, 145.5000, "🪦", "Rural site from 1880s.", "gravestone"],
+      ["Cranbourne Cemetery", -38.1000, 145.0167, "🪦", "Southeast farmers' final rest.", "gravestone"],
+      ["Frankston Memorial Park", -38.1500, 145.1333, "🪦", "Coastal cemetery since 1960s.", "gravestone"],
+      ["Geelong Memorial Park", -38.1500, 144.3833, "🪦", "Established 1855, Victoria's second-largest.", "gravestone"],
+      ["Torquay Cemetery", -38.3167, 144.3167, "🪦", "Bayside site since 1860s.", "gravestone"],
+      ["Barwon Heads Cemetery", -38.2833, 144.4833, "🪦", "Seaside graves from 1870s.", "gravestone"]
     ];
 
     function initMap() {
