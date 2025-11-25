@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Ley Lines Working</title>
+  <title>Hauntly – Accurate Ley Lines & Cranbourne Fixed</title>
 
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -70,7 +70,7 @@
     <div class="ghost"></div><div class="ghost"></div><div class="ghost"></div>
   </div>
 
-  <footer>Yellow pins = on ley lines</footer>
+  <footer>Yellow pins = within 5km of a ley line</footer>
 
   <script>
     document.getElementById("menu-btn").onclick = () => {
@@ -114,13 +114,13 @@
 
     function isNearLeyLine(lat, lng) {
       if (!leyLayerVisible) return false;
+      const point = new google.maps.LatLng(lat, lng);
       for (const path of leyLinePaths) {
         for (let i = 0; i < path.length - 1; i++) {
           const p1 = new google.maps.LatLng(path[i].lat, path[i].lng);
-          const p2 = new google.maps.LatLng(path[i+1].lat, path[i+1].lng);
-          const point = new google.maps.LatLng(lat, lng);
+          const p2 = new google.maps.LatLng(path[i + 1].lat, path[i + 1].lng);
           const dist = google.maps.geometry.spherical.computeDistanceBetween(point, p1);
-          if (dist < 50000) return true; // 50km tolerance
+          if (dist <= 5000) return true;
         }
       }
       return false;
@@ -187,7 +187,7 @@
       ["Yarra Glen Cemetery", -37.6500, 145.3833, "Grave", "Small 1860s plot.", "gravestone"],
       ["Healesville Cemetery", -37.6610, 145.5281, "Grave", "Bushland burial ground.", "gravestone"],
       ["Woori Yallock Cemetery", -37.7833, 145.5000, "Grave", "Rural site from 1880s.", "gravestone"],
-      ["Cranbourne Cemetery", -38.1000, 145.0167, "Grave", "Southeast farmers' final rest.", "gravestone"],
+      ["Cranbourne Cemetery", -38.1127, 145.2720, "Grave", "Historic Cranbourne cemetery on Sladen Street.", "gravestone"], // ← Fixed
       ["Frankston Memorial Park", -38.1500, 145.1333, "Grave", "Coastal cemetery.", "gravestone"],
       ["Geelong Memorial Park", -38.1500, 144.3833, "Grave", "Victoria's second-largest.", "gravestone"],
       ["Torquay Cemetery", -38.3167, 144.3167, "Grave", "Bayside site since 1860s.", "gravestone"],
