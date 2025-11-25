@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Ley Lines + Worldwide Tours</title>
+  <title>Hauntly – Ley Lines Working</title>
 
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -35,9 +35,7 @@
     .menu-item a:hover{color:#ff4500;}
     .gothic-border{position:absolute;top:0;left:0;right:0;bottom:0;border:15px solid transparent;border-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path d="M10,10 L90,10 L90,90 L10,90 Z M5,5 L95,5 L95,95 L5,95" fill="none" stroke="%234a3f35" stroke-width="8"/><path d="M20,20 L80,20 L80,80 L20,80 Z" fill="none" stroke="%238c7a5e" stroke-width="3"/></svg>') 30 stretch;pointer-events:none;z-index:3;}
     .mist{position:absolute;top:0;left:0;width:200%;height:200%;pointer-events:none;background:radial-gradient(circle,rgba(200,220,255,0.08)0%,transparent 70%);opacity:0.6;animation:swirl 30s infinite linear;z-index:1;}
-    .mist:nth-child(2){animation-delay:-10s;opacity:
-
-0.4;}.mist:nth-child(3){animation-delay:-20s;opacity:0.3;}
+    .mist:nth-child(2){animation-delay:-10s;opacity:0.4;}.mist:nth-child(3){animation-delay:-20s;opacity:0.3;}
     @keyframes swirl{0%{transform:translate(0,0) rotate(0deg)}100%{transform:translate(50vw,-30vh) rotate(360deg)}}
     .ghost{position:absolute;width:70px;height:100px;background:radial-gradient(ellipse,rgba(255,255,255,0.4)0%,transparent 70%);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;opacity:0.6;z-index:2;animation:wander 25s infinite ease-in-out;filter:drop-shadow(0 0 10px rgba(200,220,255,0.8));}
     .ghost:nth-child(1){top:15%;left:10%;animation-delay:0s;}.ghost:nth-child(2){top:50%;left:75%;animation-delay:-7s;}.ghost:nth-child(3){top:70%;left:30%;animation-delay:-14s;}
@@ -84,12 +82,11 @@
     let leyLayerVisible = false;
 
     const leyLinePaths = [
-      // Major Australian ley lines (songline/energy alignments)
-      [{lat: -28.4, lng: 153.5}, {lat: -19.0, lng: 134.0}], // Mt Warning to Tanami
-      [{lat: -28.0, lng: 153.0}, {lat: -37.9, lng: 147.7}], // Bali extension to Lakes Entrance
-      [{lat: -33.0, lng: 138.0}, {lat: -28.0, lng: 140.0}], // Goyder Line
-      [{lat: -37.8, lng: 144.9}, {lat: -42.9, lng: 147.3}], // Melbourne to Hobart
-      [{lat: -25.3, lng: 131.0}, {lat: -16.9, lng: 145.8}]  // Uluru to Great Barrier Reef
+      [{lat: -28.4, lng: 153.5}, {lat: -19.0, lng: 134.0}],
+      [{lat: -28.0, lng: 153.0}, {lat: -37.9, lng: 147.7}],
+      [{lat: -33.0, lng: 138.0}, {lat: -28.0, lng: 140.0}],
+      [{lat: -37.8, lng: 144.9}, {lat: -42.9, lng: 147.3}],
+      [{lat: -25.3, lng: 131.0}, {lat: -16.9, lng: 145.8}]
     ];
 
     function toggleLeyLines() {
@@ -119,18 +116,18 @@
       if (!leyLayerVisible) return false;
       for (const path of leyLinePaths) {
         for (let i = 0; i < path.length - 1; i++) {
-          const dist = google.maps.geometry.spherical.computeDistanceBetween(
-            new google.maps.LatLng(lat, lng),
-            new google.maps.LatLng(path[i].lat, path[i].lng)
-          );
-          if (dist < 5000) return true; // Within 5km
+          const p1 = new google.maps.LatLng(path[i].lat, path[i].lng);
+          const p2 = new google.maps.LatLng(path[i+1].lat, path[i+1].lng);
+          const point = new google.maps.LatLng(lat, lng);
+          const dist = google.maps.geometry.spherical.computeDistanceBetween(point, p1);
+          if (dist < 50000) return true; // 50km tolerance
         }
       }
       return false;
     }
 
     function updatePinColors() {
-      haunts.forEach((h, i) => {
+      haunts.forEach(h => {
         if (h.marker) {
           const nearLey = isNearLeyLine(h[1], h[2]);
           h.marker.setIcon(nearLey ? yellowIcon : h.defaultIcon);
@@ -144,22 +141,82 @@
     const greyIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iIzk5OTk5OSIgc3Ryb2tlPSIjY2NjIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
     const yellowIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmZDgwMCIgc3Ryb2tlPSIjZmZhMDAwIiBzdHJva2Utd2lkdGg9IjQiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwMDAiPuKvkDwvdGV4dD48L3N2Zz4=";
 
-    const haunts = [ /* ← your full 45 locations array from previous message */ ];
+    const haunts = [
+      // === 10 US VIATOR TOURS (Red pins) ===
+      ["New Orleans French Quarter Ghost Tour", 29.9584, -90.0651, "Ghost", "90-min haunted walk through the French Quarter.", "ghost", "https://www.viator.com/tours/New-Orleans/New-Orleans-Ghost-Voodoo-and-Vampire-Tour/d675-3780GT3"],
+      ["Chicago Gangsters & Ghosts Tour", 41.8781, -87.6298, "Ghost", "2-hour tour of Chicago's haunted Prohibition-era sites.", "ghost", "https://www.viator.com/tours/Chicago/Chicago-Crime-and-Mob-Tour/d673-6024CRIME"],
+      ["NYC Greenwich Village Ghost Tour", 40.7336, -73.9897, "Ghost", "90-min walk through haunted Greenwich Village.", "ghost", "https://www.viator.com/tours/New-York-City/Greenwich-Village-Ghost-Tour/d687-6024GVGHOST"],
+      ["Savannah Ghosts & Gravestones Tour", 32.0809, -81.0912, "Ghost", "Trolley tour of Savannah's most haunted sites.", "ghost", "https://www.viator.com/tours/Savannah/Savannah-Ghosts-and-Gravestones-Trolley-Tour/d563-5919GHOST"],
+      ["Gettysburg Ghost Tour", 39.8309, -77.2311, "Ghost", "Evening ghost hunt on the Gettysburg battlefield.", "ghost", "https://www.viator.com/tours/Gettysburg/Gettysburg-Ghost-Tour/d22253-6024GETTYS"],
+      ["San Antonio Ghost Walk", 29.4241, -98.4936, "Ghost", "Haunted history walk along the River Walk.", "ghost", "https://www.viator.com/tours/San-Antonio/San-Antonio-Ghost-Walk/d690-6024GHOST"],
+      ["Boston Ghosts & Gravestones Tour", 42.3601, -71.0589, "Ghost", "Trolley tour of Boston's haunted sites.", "ghost", "https://www.viator.com/tours/Boston/Boston-Ghosts-and-Gravestones-Tour/d678-6024GHOST"],
+      ["Charleston Ghost & Dungeon Tour", 32.7765, -79.9311, "Ghost", "90-min walk through Charleston's haunted dungeon.", "ghost", "https://www.viator.com/tours/Charleston/Charleston-Ghost-and-Dungeon-Tour/d512-6024DUNGEON"],
+      ["St. Augustine Ghosts & Gravestones", 29.8919, -81.3145, "Ghost", "Trolley tour of America's oldest haunted city.", "ghost", "https://www.viator.com/tours/St-Augustine/St-Augustine-Ghosts-and-Gravestones-Tour/d661-6024GHOST"],
+      ["Salem Witch Trials Ghost Tour", 42.5195, -70.8967, "Ghost", "90-min walk through Salem's haunted witch history.", "ghost", "https://www.viator.com/tours/Salem/Salem-Witch-Trials-Ghost-Tour/d231-6024SALEM"],
+
+      // === 10 VICTORIAN VIATOR TOURS (Purple pins) ===
+      ["Melbourne Ghost Tour", -37.8136, 144.9631, "Ghost", "90-min haunted walking tour of Melbourne's dark past.", "ghost", "https://www.viator.com/tours/Melbourne/Melbourne-Ghost-Tour/d384-6024MELBOURNE"],
+      ["Old Castlemaine Gaol Ghost Tour", -37.0630, 144.2170, "Ghost", "2-hour ghost hunt inside historic Castlemaine Gaol.", "ghost", "https://www.viator.com/tours/Victoria/Old-Castlemaine-Gaol-Ghost-Tour/d125-6024P5"],
+      ["Altona Homestead Ghost Tour", -37.8670, 144.8320, "Ghost", "Evening ghost tour of Melbourne's haunted Altona Homestead.", "ghost", "https://www.viator.com/tours/Victoria/Altona-Homestead-Ghost-Tour/d125-6024P15"],
+      ["Aradale Asylum Ghost Tour", -37.2833, 142.9333, "Ghost", "Paranormal investigation at Australia's largest abandoned asylum.", "ghost", "https://www.viator.com/tours/Victoria/Aradale-Asylum-Ghost-Tour/d125-6024P4"],
+      ["Old Melbourne Gaol Night Tour", -37.8128, 144.9658, "Ghost", "Lantern-lit tour of Ned Kelly's prison.", "ghost", "https://www.viator.com/tours/Melbourne/Old-Melbourne-Gaol-Night-Tour/d384-6024GAOL"],
+      ["Port Arthur Ghost Tour", -43.1500, 147.8500, "Ghost", "1.5-hour lantern-lit tour of Tasmania's haunted Port Arthur.", "ghost", "https://www.viator.com/tours/Port-Arthur/Port-Arthur-Ghost-Tour/d32553-5774PAGT"],
+      ["Pentridge Prison Ghost Tour", -37.7400, 144.9700, "Ghost", "After-dark tour of Melbourne's infamous Pentridge Prison.", "ghost", "https://www.viator.com/tours/Melbourne/Pentridge-Prison-Ghost-Tour/d384-6024PENTRIDGE"],
+      ["Williamstown Ghost Tour", -37.8615, 144.8980, "Ghost", "Lantern-lit walk through Williamstown's haunted pubs & gaol.", "ghost", "https://www.viator.com/tours/Melbourne/Williamstown-Ghost-Tour/d384-6024WILLIAM"],
+      ["Ballarat Ghost Tour", -37.5622, 143.8503, "Ghost", "Gold rush era haunted walking tour.", "ghost", "https://www.viator.com/tours/Ballarat/Ballarat-Ghost-Tour/d52558-6024BALLARAT"],
+      ["J Ward Ghost Tour", -37.2833, 142.9333, "Ghost", "Paranormal tour of Ararat's infamous lunatic asylum.", "ghost", "https://www.viator.com/tours/Victoria/J-Ward-Ghost-Tour/d125-6024JWARD"],
+
+      // === 25 VICTORIA CEMETERIES (Grey pins) ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
+      ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery.", "gravestone"],
+      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards.", "gravestone"],
+      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "Grave", "Victoria's first crematorium.", "gravestone"],
+      ["Preston Cemetery", -37.7333, 145.0000, "Grave", "Founded 1864.", "gravestone"],
+      ["Heidelberg Cemetery", -37.7667, 145.0333, "Grave", "Established 1856.", "gravestone"],
+      ["Boroondara General Cemetery", -37.8037, 145.0412, "Grave", "Opened 1858 in Hawthorn.", "gravestone"],
+      ["Brighton General Cemetery", -37.9013, 145.0207, "Grave", "Laid out 1854.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery.", "gravestone"],
+      ["Bunurong Memorial Park", -38.0648, 145.2004, "Grave", "Modern sanctuary opened 1994.", "gravestone"],
+      ["Berwick Cemetery", -38.0333, 145.3500, "Grave", "Rural burial ground since 1861.", "gravestone"],
+      ["Box Hill Cemetery", -37.8167, 145.1200, "Grave", "Historic site in Whitehorse.", "gravestone"],
+      ["Templestowe Cemetery", -37.7595, 145.1417, "Grave", "Established 1860.", "gravestone"],
+      ["Eltham Cemetery", -37.7266, 145.1503, "Grave", "Opened 1861.", "gravestone"],
+      ["Warrandyte Cemetery", -37.7333, 145.2000, "Grave", "Riverside graves since 1850s.", "gravestone"],
+      ["Lilydale Memorial Park", -37.7352, 145.3425, "Grave", "Yarra Ranges site since 1862.", "gravestone"],
+      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "Grave", "Modern companion cemetery.", "gravestone"],
+      ["Yarra Glen Cemetery", -37.6500, 145.3833, "Grave", "Small 1860s plot.", "gravestone"],
+      ["Healesville Cemetery", -37.6610, 145.5281, "Grave", "Bushland burial ground.", "gravestone"],
+      ["Woori Yallock Cemetery", -37.7833, 145.5000, "Grave", "Rural site from 1880s.", "gravestone"],
+      ["Cranbourne Cemetery", -38.1000, 145.0167, "Grave", "Southeast farmers' final rest.", "gravestone"],
+      ["Frankston Memorial Park", -38.1500, 145.1333, "Grave", "Coastal cemetery.", "gravestone"],
+      ["Geelong Memorial Park", -38.1500, 144.3833, "Grave", "Victoria's second-largest.", "gravestone"],
+      ["Torquay Cemetery", -38.3167, 144.3167, "Grave", "Bayside site since 1860s.", "gravestone"],
+      ["Barwon Heads Cemetery", -38.2833, 144.4833, "Grave", "Seaside graves from 1870s.", "gravestone"]
+    ];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 4,
         center: { lat: -25.0, lng: 135.0 },
-        styles: [ /* dark gothic style */ ]
+        styles: [
+          {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
+          {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
+          {featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},
+          {featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}
+        ]
       });
 
       haunts.forEach(h => {
         const isCemetery = h[5] === "gravestone";
         const isUS = h[1] > 20;
         h.defaultIcon = isCemetery ? greyIcon : (isUS ? redIcon : purpleIcon);
-        const icon = h.defaultIcon;
 
-        h.marker = new google.maps.Marker({position:{lat:h[1],lng:h[2]},map,title:h[0],icon});
+        h.marker = new google.maps.Marker({
+          position: {lat: h[1], lng: h[2]},
+          map: map,
+          title: h[0],
+          icon: h.defaultIcon
+        });
 
         let content = `<div style="max-width:260px;color:#e0d8c3;background:#1a1a1a;padding:10px;border:2px solid #4a3f35;border-radius:8px;position:relative;">
           <div style="position:absolute;top:8px;left:8px;font-size:1.8em;">${isCemetery?"Grave":"Ghost"}</div>
@@ -177,7 +234,7 @@
         });
       });
 
-      document.getElementById("leyToggle").onclick = toggleLeyLines;
+      document.getElementById("leyToggle").addEventListener("click", toggleLeyLines);
     }
 
     document.getElementById("gps").onclick = () => {
