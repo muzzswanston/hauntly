@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hauntly – Global Ghost Map</title>
 
-  <!-- This will automatically use VITE_GOOGLE_MAPS_API_KEY from Vercel/Netlify -->
-  <script>
-    const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "YOUR_FALLBACK_KEY_HERE";
-    if (!API_KEY || API_KEY.includes("YOUR_FALLBACK")) {
-      document.body.innerHTML = `<h1 style="color:#ff4545;text-align:center;padding:2rem;">Missing Google Maps API Key!<br>Set VITE_GOOGLE_MAPS_API_KEY in your environment variables.</h1>`;
+  <!-- Vite-style env variable (Vercel/Netlify compatible) -->
+  <script type="module">
+    const API_KEY = import.meta.env?.VITE_GOOGLE_MAPS_API_KEY;
+    if (!API_KEY) {
+      document.body.innerHTML = `
+        <div style="background:#000;color:#ff4545;text-align:center;padding:2rem;font-family:Arial;">
+          <h1>Missing Google Maps API Key</h1>
+          <p>Add <strong>VITE_GOOGLE_MAPS_API_KEY</strong> to your environment variables in Vercel/Netlify.</p>
+        </div>`;
     } else {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap&libraries=geometry`;
@@ -20,10 +24,10 @@
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    html,body,#map{height:100%;width:100%;background:#0a0a0a;font-family:Georgia,serif;color:#e0d8c3;}
+    html,body,#map{height:100%;width:100%;font-family:Georgia,serif;background:#0a0a0a;color:#e0d8c3;overflow:hidden;}
     header{background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;position:relative;z-index:10;}
-    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;}
-    #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;}
+    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;margin:0;}
+    #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;font-weight:bold;}
     #leyToggle{background:#8B4513;}
     #menu-btn{position:absolute;top:1rem;left:1rem;font-size:2rem;cursor:pointer;color:#b8a07e;z-index:20;}
     #sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#1a1a1a;border-right:3px double #4a3f35;transition:left .4s;z-index:15;padding:6rem 1rem;}
@@ -76,7 +80,7 @@
       {path:[{lat:-33.4489,lng:-70.6693},{lat:-25.2637,lng:-57.5759}],color:"#55efc4"}
     ];
 
-    const haunts = [ /* ← Your full 45 locations from previous message – already included below */ 
+    const haunts = [
       ["New Orleans French Quarter",29.9584,-90.0651,"Ghost","90-min voodoo tour","ghost","https://viator.com/..."],
       ["Chicago Gangsters",41.8781,-87.6298,"Ghost","Prohibition ghosts","ghost","https://viator.com/..."],
       ["NYC Greenwich Village",40.7336,-73.9897,"Ghost","Haunted Village","ghost","https://viator.com/..."],
@@ -128,7 +132,12 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 3,
         center: { lat: 0, lng: 0 },
-        styles: [{elementType:"geometry",stylers:[{color:"#1a1a1a"}]},{elementType:"labels.text.fill",stylers:[{color:"#746855"}]}]
+        styles: [
+          {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
+          {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
+          {featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},
+          {featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}
+        ]
       });
 
       haunts.forEach(h => {
@@ -200,7 +209,7 @@
       navigator.geolocation.getCurrentPosition(p => {
         map.setCenter({lat:p.coords.latitude,lng:p.coords.longitude});
         map.setZoom(14);
-      });
+      }, () => alert("GPS denied"));
     };
   </script>
 </body>
