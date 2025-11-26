@@ -3,24 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Global Ghost Map</title>
+  <title>Hauntly – Clean & Fast</title>
 
-  <!-- Replace YOUR_GOOGLE_MAPS_API_KEY or use Vite env -->
+  <!-- Uses VITE_GOOGLE_MAPS_API_KEY from Vercel/Netlify environment -->
   <script type="module">
-    const API_KEY = "AIzaSyB7ycoaSotoTi7i8bD9skJCQcQ37JBVAEo";
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap&libraries=geometry`;
-    script.async = true;
-    document.head.appendChild(script);
+    const API_KEY = import.meta.env?.VITE_GOOGLE_MAPS_API_KEY;
+    if (!API_KEY) {
+      document.body.innerHTML = `<h1 style="color:#ff4545;text-align:center;padding:2rem;">Missing API Key<br>Set VITE_GOOGLE_MAPS_API_KEY in Vercel/Netlify</h1>`;
+    } else {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap`;
+      script.async = true;
+      document.head.appendChild(script);
+    }
   </script>
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    html,body,#map{height:100%;width:100%;font-family:Georgia,serif;background:#0a0a0a;color:#e0d8c3;}
+    html,body,#map{height:100%;width:100%;font-family:Georgia,serif;background:#0a0a0a;color:#e0d8c3;overflow:hidden;}
     header{background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;position:relative;z-index:10;}
-    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;}
+    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;margin:0;}
     #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;}
-    #leyToggle{background:#8B4513;}
     #menu-btn{position:absolute;top:1rem;left:1rem;font-size:2rem;cursor:pointer;color:#b8a07e;z-index:20;}
     #sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#1a1a1a;border-right:3px double #4a3f35;transition:left .4s;z-index:15;padding:6rem 1rem;}
     #sidebar.open{left:0;}
@@ -46,29 +49,16 @@
     <p>45 Haunted Locations Worldwide</p>
     <div id="controls">
       <button id="gps">Center on Me</button>
-      <button id="leyToggle">Show Ley Lines</button>
     </div>
   </header>
 
   <div id="map"></div>
-  <footer>Pins on the same ley line share the same color • Yellow = within 5 km</footer>
+  <footer>Tap pins for details • Red = US Tours • Purple = Victorian Tours • Grey = Cemeteries</footer>
 
   <script>
-    let map, infoWindow;
-    let leyLines = [], leyVisible = false;
+    document.getElementById("menu-btn").onclick = () => document.getElementById("sidebar").classList.toggle("open");
 
-    const leyLinePaths = [
-      {path:[{lat:51.1789,lng:-1.8262},{lat:29.9792,lng:31.1342}],color:"#ff6b6b"},
-      {path:[{lat:-25.3444,lng:131.0369},{lat:-13.1631,lng:-72.5450}],color:"#4ecdc4"},
-      {path:[{lat:41.3095,lng:-122.3121},{lat:25,lng:-71}],color:"#45b7d1"},
-      {path:[{lat:50.7306,lng:-1.4994},{lat:31.7683,lng:35.2137}],color:"#f9ca24"},
-      {path:[{lat:35.6762,lng:139.6503},{lat:13.4125,lng:103.8669}],color:"#f0932b"},
-      {path:[{lat:19.4326,lng:-99.1332},{lat:-27.1127,lng:-109.3497}],color:"#eb4d4b"},
-      {path:[{lat:37.9838,lng:23.7275},{lat:27.1751,lng:78.0421}],color:"#6c5ce7"},
-      {path:[{lat:-33.8568,lng:151.2153},{lat:-37.8136,lng:144.9631}],color:"#a29bfe"},
-      {path:[{lat:40.7128,lng:-74.0060},{lat:48.8566,lng:2.3522}],color:"#fd79a8"},
-      {path:[{lat:-33.4489,lng:-70.6693},{lat:-25.2637,lng:-57.5759}],color:"#55efc4"}
-    ];
+    let map, infoWindow;
 
     const haunts = [
       ["New Orleans French Quarter",29.9584,-90.0651,"Ghost","90-min voodoo tour","ghost","https://viator.com/..."],
@@ -122,7 +112,12 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 3,
         center: { lat: 0, lng: 0 },
-        styles: [{elementType:"geometry",stylers:[{color:"#1a1a1a"}]},{elementType:"labels.text.fill",stylers:[{color:"#746855"}]}]
+        styles: [
+          {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
+          {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
+          {featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},
+          {featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}
+        ]
       });
 
       haunts.forEach(h => {
@@ -133,60 +128,23 @@
           scaledSize: new google.maps.Size(40,40)
         };
 
-        h.marker = new google.maps.Marker({position:{lat:h[1],lng:h[2]},map,title:h[0],icon});
-        h.defaultIcon = icon;
+        const marker = new google.maps.Marker({
+          position: {lat: h[1], lng: h[2]},
+          map: map,
+          title: h[0],
+          icon: icon
+        });
 
         const content = `<div style="background:#1a1a1a;color:#e0d8c3;padding:10px;border:2px solid #4a3f35;border-radius:8px;max-width:260px;">
           <b style="color:#b8a07e;">\( {h[0]}</b><br> \){h[3]}\( {!isCemetery && h[6] ? `<br><a href=" \){h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>` : ""}
         </div>`;
 
         const iw = new google.maps.InfoWindow({content});
-        h.marker.addListener("click", () => { if (infoWindow) infoWindow.close(); iw.open(map, h.marker); infoWindow = iw; });
-      });
-
-      document.getElementById("leyToggle").onclick = () => {
-        leyVisible = !leyVisible;
-        document.getElementById("leyToggle").textContent = leyVisible ? "Hide Ley Lines" : "Show Ley Lines";
-        if (leyVisible) {
-          leyLinePaths.forEach((l,i) => {
-            const line = new google.maps.Polyline({path:l.path,geodesic:true,strokeColor:l.color,strokeOpacity:0.6,strokeWeight:2,map});
-            leyLines.push({line,index:i});
-          });
-        } else {
-          leyLines.forEach(o => o.line.setMap(null));
-          leyLines = [];
-        }
-        updateColors();
-      };
-    }
-
-    function updateColors() {
-      haunts.forEach(h => {
-        if (!h.marker || h[5] === "gravestone") return;
-        if (!leyVisible) { h.marker.setIcon(h.defaultIcon); return; }
-
-        let closest = {dist:Infinity,index:-1};
-        const point = new google.maps.LatLng(h[1], h[2]);
-
-        leyLinePaths.forEach((l,i) => {
-          for (let j = 0; j < l.path.length-1; j++) {
-            const p1 = new google.maps.LatLng(l.path[j].lat, l.path[j].lng);
-            const p2 = new google.maps.LatLng(l.path[j+1].lat, l.path[j+1].lng);
-            const proj = google.maps.geometry.spherical.interpolate(p1, p2,
-              google.maps.geometry.spherical.computeHeading(p1, point) /
-              google.maps.geometry.spherical.computeHeading(p1, p2));
-            const dist = google.maps.geometry.spherical.computeDistanceBetween(point, proj);
-            if (dist < closest.dist) { closest = {dist, index:i}; }
-          }
+        marker.addListener("click", () => {
+          if (infoWindow) infoWindow.close();
+          iw.open(map, marker);
+          infoWindow = iw;
         });
-
-        if (closest.dist <= 5000 && closest.index !== -1) {
-          const color = leyLinePaths[closest.index].color;
-          h.marker.setIcon({
-            url: `data:image/svg+xml,\( {encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="20" r="18" fill=" \){color}" stroke="#000" stroke-width="4"/><text x="20" y="25" font-size="16" text-anchor="middle" fill="#fff">Ghost</text></svg>`)}`,
-            scaledSize: new google.maps.Size(40,40)
-          });
-        } else h.marker.setIcon(h.defaultIcon);
       });
     }
 
