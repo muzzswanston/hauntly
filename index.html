@@ -5,29 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hauntly – Global Ghost Map</title>
 
-  <!-- Vite-style env variable (Vercel/Netlify compatible) -->
+  <!-- Replace YOUR_GOOGLE_MAPS_API_KEY or use Vite env -->
   <script type="module">
-    const API_KEY = import.meta.env?.VITE_GOOGLE_MAPS_API_KEY;
-    if (!API_KEY) {
-      document.body.innerHTML = `
-        <div style="background:#000;color:#ff4545;text-align:center;padding:2rem;font-family:Arial;">
-          <h1>Missing Google Maps API Key</h1>
-          <p>Add <strong>VITE_GOOGLE_MAPS_API_KEY</strong> to your environment variables in Vercel/Netlify.</p>
-        </div>`;
-    } else {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap&libraries=geometry`;
-      script.async = true;
-      document.head.appendChild(script);
-    }
+    const API_KEY = "AIzaSyB7ycoaSotoTi7i8bD9skJCQcQ37JBVAEo";
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap&libraries=geometry`;
+    script.async = true;
+    document.head.appendChild(script);
   </script>
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    html,body,#map{height:100%;width:100%;font-family:Georgia,serif;background:#0a0a0a;color:#e0d8c3;overflow:hidden;}
+    html,body,#map{height:100%;width:100%;font-family:Georgia,serif;background:#0a0a0a;color:#e0d8c3;}
     header{background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;position:relative;z-index:10;}
-    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;margin:0;}
-    #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;font-weight:bold;}
+    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;}
+    #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;}
     #leyToggle{background:#8B4513;}
     #menu-btn{position:absolute;top:1rem;left:1rem;font-size:2rem;cursor:pointer;color:#b8a07e;z-index:20;}
     #sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#1a1a1a;border-right:3px double #4a3f35;transition:left .4s;z-index:15;padding:6rem 1rem;}
@@ -59,11 +51,9 @@
   </header>
 
   <div id="map"></div>
-  <footer>Pins on the same ley line share the same color • 5 km radius</footer>
+  <footer>Pins on the same ley line share the same color • Yellow = within 5 km</footer>
 
   <script>
-    document.getElementById("menu-btn").onclick = () => document.getElementById("sidebar").classList.toggle("open");
-
     let map, infoWindow;
     let leyLines = [], leyVisible = false;
 
@@ -132,12 +122,7 @@
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 3,
         center: { lat: 0, lng: 0 },
-        styles: [
-          {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
-          {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
-          {featureType:"road",elementType:"geometry",stylers:[{color:"#38414e"}]},
-          {featureType:"water",elementType:"geometry",stylers:[{color:"#17263c"}]}
-        ]
+        styles: [{elementType:"geometry",stylers:[{color:"#1a1a1a"}]},{elementType:"labels.text.fill",stylers:[{color:"#746855"}]}]
       });
 
       haunts.forEach(h => {
@@ -191,7 +176,7 @@
               google.maps.geometry.spherical.computeHeading(p1, point) /
               google.maps.geometry.spherical.computeHeading(p1, p2));
             const dist = google.maps.geometry.spherical.computeDistanceBetween(point, proj);
-            if (dist < closest.dist) closest = {dist, index:i};
+            if (dist < closest.dist) { closest = {dist, index:i}; }
           }
         });
 
