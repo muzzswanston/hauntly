@@ -3,35 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Clean & Fast</title>
+  <title>Hauntly – Bookings.com Ghost Tours</title>
 
-  <!-- Uses VITE_GOOGLE_MAPS_API_KEY from Vercel/Netlify environment -->
   <script type="module">
-    const API_KEY = import.meta.env?.VITE_GOOGLE_MAPS_API_KEY;
+    const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!API_KEY) {
-      document.body.innerHTML = `<h1 style="color:#ff4545;text-align:center;padding:2rem;">Missing API Key<br>Set VITE_GOOGLE_MAPS_API_KEY in Vercel/Netlify</h1>`;
+      document.body.innerHTML = `<h1 style="color:red;text-align:center;margin-top:50px">Error: Missing Google Maps Key. Set VITE_GOOGLE_MAPS_API_KEY in Vercel.</h1>`;
     } else {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=initMap`;
-      script.async = true;
+      script.async = true; script.defer = true;
       document.head.appendChild(script);
     }
   </script>
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
-    html,body,#map{height:100%;width:100%;font-family:Georgia,serif;background:#0a0a0a;color:#e0d8c3;overflow:hidden;}
+    body{background:#0a0a0a;color:#e0d8c3;font-family:'Georgia',serif;overflow:hidden;}
     header{background:#1a1a1a;padding:1rem;text-align:center;border-bottom:3px double #4a3f35;position:relative;z-index:10;}
-    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;margin:0;}
-    #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;}
+    h1{font-size:1.8rem;color:#b8a07e;text-shadow:0 0 8px #4a3f35;}
+    #controls button{background:#4a3f35;color:#fff;border:2px solid #8c7a5e;padding:.6rem 1.2rem;border-radius:6px;margin:0.3rem;cursor:pointer;font-weight:bold;}
     #menu-btn{position:absolute;top:1rem;left:1rem;font-size:2rem;cursor:pointer;color:#b8a07e;z-index:20;}
     #sidebar{position:fixed;top:0;left:-300px;width:280px;height:100%;background:#1a1a1a;border-right:3px double #4a3f35;transition:left .4s;z-index:15;padding:6rem 1rem;}
     #sidebar.open{left:0;}
     .menu-item{margin:1.5rem 0;font-size:1.3rem;}
     .menu-item a{color:#e0d8c3;text-decoration:none;}
     .menu-item a:hover{color:#ff4500;}
-    .book-btn{background:#ff4500;color:white;border:none;padding:8px 16px;border-radius:4px;font-weight:bold;cursor:pointer;}
+    #map-container{position:relative;height:80vh;width:100%;overflow:hidden;}
+    #map{height:100%;width:100%;}
     footer{text-align:center;padding:.5rem;background:#1a1a1a;color:#8c7a5e;border-top:2px solid #4a3f35;font-size:.8rem;}
+    .book-btn{background:#ff4500;color:white;border:none;padding:8px 16px;border-radius:4px;font-weight:bold;cursor:pointer;}
   </style>
 </head>
 <body>
@@ -46,14 +47,14 @@
 
   <header>
     <h1>Hauntly</h1>
-    <p>45 Haunted Locations Worldwide</p>
+    <p>35 Haunted Locations in Australia</p>
     <div id="controls">
       <button id="gps">Center on Me</button>
     </div>
   </header>
 
-  <div id="map"></div>
-  <footer>Tap pins for details • Red = US Tours • Purple = Victorian Tours • Grey = Cemeteries</footer>
+  <div id="map-container"><div id="map"></div></div>
+  <footer>Tap pins for haunt details • Book via Bookings.com partners</footer>
 
   <script>
     document.getElementById("menu-btn").onclick = () => document.getElementById("sidebar").classList.toggle("open");
@@ -61,57 +62,50 @@
     let map, infoWindow;
 
     const haunts = [
-      ["New Orleans French Quarter",29.9584,-90.0651,"Ghost","90-min voodoo tour","ghost","https://viator.com/..."],
-      ["Chicago Gangsters",41.8781,-87.6298,"Ghost","Prohibition ghosts","ghost","https://viator.com/..."],
-      ["NYC Greenwich Village",40.7336,-73.9897,"Ghost","Haunted Village","ghost","https://viator.com/..."],
-      ["Savannah Ghosts",32.0809,-81.0912,"Ghost","Trolley tour","ghost","https://viator.com/..."],
-      ["Gettysburg",39.8309,-77.2311,"Ghost","Battlefield hunt","ghost","https://viator.com/..."],
-      ["San Antonio",29.4241,-98.4936,"Ghost","River Walk","ghost","https://viator.com/..."],
-      ["Boston",42.3601,-71.0589,"Ghost","Trolley tour","ghost","https://viator.com/..."],
-      ["Charleston",32.7765,-79.9311,"Ghost","Dungeon tour","ghost","https://viator.com/..."],
-      ["St. Augustine",29.8919,-81.3145,"Ghost","Oldest haunt","ghost","https://viator.com/..."],
-      ["Salem",42.5195,-70.8967,"Ghost","Witch trials","ghost","https://viator.com/..."],
-      ["Melbourne Ghost Tour",-37.8136,144.9631,"Ghost","Melbourne dark past","ghost","https://viator.com/..."],
-      ["Old Castlemaine Gaol",-37.0630,144.2170,"Ghost","Historic gaol","ghost","https://viator.com/..."],
-      ["Altona Homestead",-37.8670,144.8320,"Ghost","Haunted homestead","ghost","https://viator.com/..."],
-      ["Aradale Asylum",-37.2833,142.9333,"Ghost","Abandoned asylum","ghost","https://viator.com/..."],
-      ["Old Melbourne Gaol",-37.8128,144.9658,"Ghost","Ned Kelly","ghost","https://viator.com/..."],
-      ["Port Arthur",-43.1500,147.8500,"Ghost","Convict site","ghost","https://viator.com/..."],
-      ["Pentridge Prison",-37.7400,144.9700,"Ghost","Infamous prison","ghost","https://viator.com/..."],
-      ["Williamstown",-37.8615,144.8980,"Ghost","Pubs & gaol","ghost","https://viator.com/..."],
-      ["Ballarat",-37.5622,143.8503,"Ghost","Gold rush","ghost","https://viator.com/..."],
-      ["J Ward",-37.2833,142.9333,"Ghost","Lunatic asylum","ghost","https://viator.com/..."],
-      ["Melbourne General Cemetery",-37.7867,144.9592,"Grave","Prime Ministers","gravestone"],
-      ["St Kilda Cemetery",-37.8667,144.9833,"Grave","Oldest","gravestone"],
-      ["Coburg Pine Ridge",-37.7429,144.9822,"Grave","First graveyard","gravestone"],
-      ["Fawkner Crematorium",-37.7667,144.9500,"Grave","First crematorium","gravestone"],
-      ["Preston Cemetery",-37.7333,145.0000,"Grave","1864","gravestone"],
-      ["Heidelberg Cemetery",-37.7667,145.0333,"Grave","1856","gravestone"],
-      ["Boroondara General",-37.8037,145.0412,"Grave","1858","gravestone"],
-      ["Brighton General",-37.9013,145.0207,"Grave","1854","gravestone"],
-      ["Springvale Botanical",-37.9388,145.1720,"Grave","Largest","gravestone"],
-      ["Bunurong Memorial",-38.0648,145.2004,"Grave","1994","gravestone"],
-      ["Berwick Cemetery",-38.0333,145.3500,"Grave","1861","gravestone"],
-      ["Box Hill Cemetery",-37.8167,145.1200,"Grave","Whitehorse","gravestone"],
-      ["Templestowe Cemetery",-37.7595,145.1417,"Grave","1860","gravestone"],
-      ["Eltham Cemetery",-37.7266,145.1503,"Grave","1861","gravestone"],
-      ["Warrandyte Cemetery",-37.7333,145.2000,"Grave","1850s","gravestone"],
-      ["Lilydale Memorial",-37.7352,145.3425,"Grave","1862","gravestone"],
-      ["Lilydale Lawn",-37.7470,145.3384,"Grave","Modern","gravestone"],
-      ["Yarra Glen Cemetery",-37.6500,145.3833,"Grave","1860s","gravestone"],
-      ["Healesville Cemetery",-37.6610,145.5281,"Grave","Bushland","gravestone"],
-      ["Woori Yallock",-37.7833,145.5000,"Grave","1880s","gravestone"],
-      ["Cranbourne Cemetery",-38.1127,145.2720,"Grave","Sladen St","gravestone"],
-      ["Frankston Memorial",-38.1500,145.1333,"Grave","Coastal","gravestone"],
-      ["Geelong Memorial",-38.1500,144.3833,"Grave","Second-largest","gravestone"],
-      ["Torquay Cemetery",-38.3167,144.3167,"Grave","1860s","gravestone"],
-      ["Barwon Heads",-38.2833,144.4833,"Grave","1870s","gravestone"]
+      // === 10 REAL AUSTRALIAN GHOST TOURS FROM BOOKINGS.COM PARTNERS ===
+      ["Lantern Ghost Tours – Melbourne", -37.8136, 144.9631, "Ghost", "Award-winning lantern-lit ghost tour of Melbourne's haunted laneways.", "ghost", "https://www.lanternghosttours.com/ghost-tours-melbourne/"],
+      ["The Rocks Ghost Tours – Sydney", -33.8590, 151.2093, "Ghost", "Nightly haunted walk through Sydney's historic Rocks district.", "ghost", "https://www.ghosttours.com.au/"],
+      ["Jack Sim Ghost Tours – Brisbane", -27.4698, 153.0251, "Ghost", "Historical ghost tours of Brisbane's haunted sites and cemeteries.", "ghost", "https://ghosttoursaustralia.com.au/"],
+      ["Asylum Ghost Tours – Beechworth", -36.3680, 146.9270, "Ghost", "Night tours of Beechworth Asylum with paranormal equipment.", "ghost", "https://www.asylumghosttours.com/"],
+      ["Q Station Ghost Tours – Manly", -33.8000, 151.2167, "Ghost", "2.5-hour ghostly encounters at Sydney's Quarantine Station.", "ghost", "https://www.quarantineghosttours.com/"],
+      ["Aradale Ghost Tour – Ararat", -37.2833, 142.9333, "Ghost", "Paranormal investigation at Australia's largest abandoned asylum.", "ghost", "https://www.eerietours.com.au/tours/aradale-ghost-tour/"],
+      ["Port Arthur Ghost Tour – Tasmania", -43.1500, 147.8500, "Ghost", "Lantern-lit tour of Tasmania's most haunted convict prison.", "ghost", "https://www.portarthur.org.au/ghost-tours/"],
+      ["Pentridge Prison Ghost Tour – Melbourne", -37.7400, 144.9700, "Ghost", "After-dark tour of Melbourne's infamous Pentridge Prison.", "ghost", "https://www.pentridgeprison.com.au/ghost-tours/"],
+      ["Fremantle Prison Torchlight Tour – Perth", -32.0560, 115.7486, "Ghost", "Torchlight tour of Fremantle Prison's haunted cells.", "ghost", "https://fremantleprison.com.au/tours/torchlight-tour/"],
+      ["Old Melbourne Gaol Night Tour", -37.8128, 144.9658, "Ghost", "Lantern-lit tour of Ned Kelly's prison.", "ghost", "https://www.oldmelbournegaol.com.au/night-tours/"],
+
+      // === 25 VICTORIA CEMETERIES ===
+      ["Melbourne General Cemetery", -37.7867, 144.9592, "Grave", "Burial site for 5 Australian Prime Ministers.", "gravestone"],
+      ["St Kilda Cemetery", -37.8667, 144.9833, "Grave", "Victoria's oldest surviving cemetery.", "gravestone"],
+      ["Coburg Pine Ridge Cemetery", -37.7429, 144.9822, "Grave", "One of Melbourne's first graveyards.", "gravestone"],
+      ["Fawkner Crematorium & Memorial Park", -37.7667, 144.9500, "Grave", "Victoria's first crematorium.", "gravestone"],
+      ["Preston Cemetery", -37.7333, 145.0000, "Grave", "Founded 1864.", "gravestone"],
+      ["Heidelberg Cemetery", -37.7667, 145.0333, "Grave", "Established 1856.", "gravestone"],
+      ["Boroondara General Cemetery", -37.8037, 145.0412, "Grave", "Opened 1858 in Hawthorn.", "gravestone"],
+      ["Brighton General Cemetery", -37.9013, 145.0207, "Grave", "Laid out 1854.", "gravestone"],
+      ["Springvale Botanical Cemetery", -37.9388, 145.1720, "Grave", "Australia's largest cemetery.", "gravestone"],
+      ["Bunurong Memorial Park", -38.0648, 145.2004, "Grave", "Modern sanctuary opened 1994.", "gravestone"],
+      ["Berwick Cemetery", -38.0333, 145.3500, "Grave", "Rural burial ground since 1861.", "gravestone"],
+      ["Box Hill Cemetery", -37.8167, 145.1200, "Grave", "Historic site in Whitehorse.", "gravestone"],
+      ["Templestowe Cemetery", -37.7595, 145.1417, "Grave", "Established 1860.", "gravestone"],
+      ["Eltham Cemetery", -37.7266, 145.1503, "Grave", "Opened 1861.", "gravestone"],
+      ["Warrandyte Cemetery", -37.7333, 145.2000, "Grave", "Riverside graves since 1850s.", "gravestone"],
+      ["Lilydale Memorial Park", -37.7352, 145.3425, "Grave", "Yarra Ranges site since 1862.", "gravestone"],
+      ["Lilydale Lawn Cemetery", -37.7470, 145.3384, "Grave", "Modern companion cemetery.", "gravestone"],
+      ["Yarra Glen Cemetery", -37.6500, 145.3833, "Grave", "Small 1860s plot.", "gravestone"],
+      ["Healesville Cemetery", -37.6610, 145.5281, "Grave", "Bushland burial ground.", "gravestone"],
+      ["Woori Yallock Cemetery", -37.7833, 145.5000, "Grave", "Rural site from 1880s.", "gravestone"],
+      ["Cranbourne Cemetery", -38.1127, 145.2720, "Grave", "Historic Cranbourne cemetery on Sladen Street.", "gravestone"],
+      ["Frankston Memorial Park", -38.1500, 145.1333, "Grave", "Coastal cemetery.", "gravestone"],
+      ["Geelong Memorial Park", -38.1500, 144.3833, "Grave", "Victoria's second-largest.", "gravestone"],
+      ["Torquay Cemetery", -38.3167, 144.3167, "Grave", "Bayside site since 1860s.", "gravestone"],
+      ["Barwon Heads Cemetery", -38.2833, 144.4833, "Grave", "Seaside graves from 1870s.", "gravestone"]
     ];
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 3,
-        center: { lat: 0, lng: 0 },
+        zoom: 6,
+        center: { lat: -25.0, lng: 135.0 },
         styles: [
           {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
           {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
@@ -122,22 +116,16 @@
 
       haunts.forEach(h => {
         const isCemetery = h[5] === "gravestone";
-        const baseColor = isCemetery ? "#999999" : (h[1] > 20 ? "#ff4545" : "#9458ff");
-        const icon = {
-          url: `data:image/svg+xml,\( {encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="20" r="18" fill=" \){baseColor}" stroke="#000" stroke-width="3"/><text x="20" y="25" font-size="16" text-anchor="middle" fill="#fff">${isCemetery?"Grave":"Ghost"}</text></svg>`)}`,
-          scaledSize: new google.maps.Size(40,40)
-        };
+        const icon = isCemetery
+          ? "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iIzk5OTk5OSIgc3Ryb2tlPSIjY2NjIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4="
+          : "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmNDU0NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
 
-        const marker = new google.maps.Marker({
-          position: {lat: h[1], lng: h[2]},
-          map: map,
-          title: h[0],
-          icon: icon
-        });
+        const marker = new google.maps.Marker({position:{lat:h[1],lng:h[2]},map,title:h[0],icon});
 
-        const content = `<div style="background:#1a1a1a;color:#e0d8c3;padding:10px;border:2px solid #4a3f35;border-radius:8px;max-width:260px;">
-          <b style="color:#b8a07e;">\( {h[0]}</b><br> \){h[3]}\( {!isCemetery && h[6] ? `<br><a href=" \){h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>` : ""}
-        </div>`;
+        let content = `<div style="max-width:260px;background:#1a1a1a;color:#e0d8c3;padding:10px;border:2px solid #4a3f35;border-radius:8px;">
+          <b style="color:#b8a07e;">\( {h[0]}</b><br> \){h[3]}`;
+        if (!isCemetery && h[6]) content += `<br><a href="${h[6]}" target="_blank"><button class="book-btn">Book Tour</button></a>`;
+        content += `</div>`;
 
         const iw = new google.maps.InfoWindow({content});
         marker.addListener("click", () => {
