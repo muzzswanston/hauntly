@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hauntly – Accurate Ley Lines & Cranbourne Fixed</title>
+  <title>Hauntly – Global Ley Lines</title>
 
   <script type="module">
     const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -59,7 +59,7 @@
     <p>45 Haunted Locations Worldwide</p>
     <div id="controls">
       <button id="gps">Center on Me</button>
-      <button id="leyToggle">Show Ley Lines</button>
+      <button id="leyToggle">Show Global Ley Lines</button>
     </div>
   </header>
 
@@ -70,7 +70,7 @@
     <div class="ghost"></div><div class="ghost"></div><div class="ghost"></div>
   </div>
 
-  <footer>Yellow pins = within 5km of a ley line</footer>
+  <footer>Yellow pins = on a global ley line</footer>
 
   <script>
     document.getElementById("menu-btn").onclick = () => {
@@ -81,17 +81,23 @@
     let leyLines = [];
     let leyLayerVisible = false;
 
+    // Global Ley Lines (Becker-Hagens + major sacred alignments)
     const leyLinePaths = [
-      [{lat: -28.4, lng: 153.5}, {lat: -19.0, lng: 134.0}],
-      [{lat: -28.0, lng: 153.0}, {lat: -37.9, lng: 147.7}],
-      [{lat: -33.0, lng: 138.0}, {lat: -28.0, lng: 140.0}],
-      [{lat: -37.8, lng: 144.9}, {lat: -42.9, lng: 147.3}],
-      [{lat: -25.3, lng: 131.0}, {lat: -16.9, lng: 145.8}]
+      [{lat: 51.1789, lng: -1.8262}, {lat: 29.9792, lng: 31.1342}], // Stonehenge → Giza
+      [{lat: -25.3444, lng: 131.0369}, {lat: -13.1631, lng: -72.5450}], // Uluru → Machu Picchu
+      [{lat: 41.3095, lng: -122.3121}, {lat: 25.0000, lng: -71.0000}], // Mt Shasta → Bermuda
+      [{lat: 50.7306, lng: -1.4994}, {lat: 31.7683, lng: 35.2137}], // St Michael's Line
+      [{lat: 35.6762, lng: 139.6503}, {lat: 13.4125, lng: 103.8669}], // Tokyo → Angkor Wat
+      [{lat: 19.4326, lng: -99.1332}, {lat: -27.1127, lng: -109.3497}], // Mexico City → Easter Island
+      [{lat: 37.9838, lng: 23.7275}, {lat: 27.1751, lng: 78.0421}], // Parthenon → Taj Mahal
+      [{lat: -33.8568, lng: 151.2153}, {lat: -37.8136, lng: 144.9631}], // Sydney → Melbourne
+      [{lat: 40.7128, lng: -74.0060}, {lat: 48.8566, lng: 2.3522}], // NYC → Paris
+      [{lat: -33.4489, lng: -70.6693}, {lat: -25.2637, lng: -57.5759}]  // Santiago → Asunción
     ];
 
     function toggleLeyLines() {
       leyLayerVisible = !leyLayerVisible;
-      document.getElementById("leyToggle").textContent = leyLayerVisible ? "Hide Ley Lines" : "Show Ley Lines";
+      document.getElementById("leyToggle").textContent = leyLayerVisible ? "Hide Global Ley Lines" : "Show Global Ley Lines";
 
       if (leyLayerVisible) {
         leyLinePaths.forEach(path => {
@@ -99,7 +105,7 @@
             path: path,
             geodesic: true,
             strokeColor: '#ffffff',
-            strokeOpacity: 0.6,
+            strokeOpacity: 0.5,
             strokeWeight: 2,
             map: map
           });
@@ -120,7 +126,7 @@
           const p1 = new google.maps.LatLng(path[i].lat, path[i].lng);
           const p2 = new google.maps.LatLng(path[i + 1].lat, path[i + 1].lng);
           const dist = google.maps.geometry.spherical.computeDistanceBetween(point, p1);
-          if (dist <= 5000) return true;
+          if (dist <= 5000) return true; // 5km
         }
       }
       return false;
@@ -135,7 +141,6 @@
       });
     }
 
-    const whiteIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwMDAiPuKvkDwvdGV4dD48L3N2Zz4=";
     const redIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iI2ZmNDU0NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
     const purpleIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iIzk0NThmZiIgc3Ryb2tlPSIjN2EwMGRkIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
     const greyIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxOCIgZmlsbD0iIzk5OTk5OSIgc3Ryb2tlPSIjY2NjIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSIyMCIgeT0iMjUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmZmYiPuKvkDwvdGV4dD48L3N2Zz4=";
@@ -187,7 +192,7 @@
       ["Yarra Glen Cemetery", -37.6500, 145.3833, "Grave", "Small 1860s plot.", "gravestone"],
       ["Healesville Cemetery", -37.6610, 145.5281, "Grave", "Bushland burial ground.", "gravestone"],
       ["Woori Yallock Cemetery", -37.7833, 145.5000, "Grave", "Rural site from 1880s.", "gravestone"],
-      ["Cranbourne Cemetery", -38.1127, 145.2720, "Grave", "Historic Cranbourne cemetery on Sladen Street.", "gravestone"], // ← Fixed
+      ["Cranbourne Cemetery", -38.1127, 145.2720, "Grave", "Historic Cranbourne cemetery on Sladen Street.", "gravestone"],
       ["Frankston Memorial Park", -38.1500, 145.1333, "Grave", "Coastal cemetery.", "gravestone"],
       ["Geelong Memorial Park", -38.1500, 144.3833, "Grave", "Victoria's second-largest.", "gravestone"],
       ["Torquay Cemetery", -38.3167, 144.3167, "Grave", "Bayside site since 1860s.", "gravestone"],
@@ -196,8 +201,8 @@
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 4,
-        center: { lat: -25.0, lng: 135.0 },
+        zoom: 2,
+        center: { lat: 20, lng: 0 },
         styles: [
           {elementType:"geometry",stylers:[{color:"#1a1a1a"}]},
           {elementType:"labels.text.fill",stylers:[{color:"#746855"}]},
