@@ -245,6 +245,94 @@ function centerOnUser() {
   )
 }
 
+function setupSearch() {
+  const searchBox = document.getElementById('searchBox')
+  if (!searchBox) return
+
+  searchBox.addEventListener('input', () => {
+    const term = searchBox.value.toLowerCase().trim()
+
+    const filtered = allLocations.filter((location) => {
+      const matchesSearch =
+        location.name?.toLowerCase().includes(term) ||
+        location.city?.toLowerCase().includes(term) ||
+        location.region?.toLowerCase().includes(term) ||
+        location.country?.toLowerCase().includes(term) ||
+        location.category?.toLowerCase().includes(term) ||
+        location.location_type?.toLowerCase().includes(term)
+
+      const matchesCategory =
+        activeCategory === 'All' || location.category === activeCategory
+
+      return matchesSearch && matchesCategory
+    })
+
+    renderMarkers(filtered)
+    updateLocationCount(filtered.length)
+  })
+}
+
+function setupSubmitMystery() {
+  const submitToggle = document.getElementById('submitToggle')
+  const submitPanel = document.getElementById('submitPanel')
+  const submitBtn = document.getElementById('submitMysteryBtn')
+
+  if (!submitToggle || !submitPanel || !submitBtn) return
+
+  submitToggle.onclick = () => {
+    submitPanel.style.display =
+      submitPanel.style.display === 'none' || submitPanel.style.display === ''
+        ? 'block'
+        : 'none'
+  }
+
+  submitBtn.onclick = async () => {
+    const name = document.getElementById('submitName').value.trim()
+    const city = document.getElementById('submitCity').value.trim()
+    const region = document.getElementById('submitRegion').value.trim()
+    const category = document.getElementById('submitCategory').value
+    const latitude = Number(document.getElementById('submitLat').value)
+    const longitude = Number(document.getElementById('submitLng').value)
+    const story = document.getElementById('submitStory').value.trim()
+
+    if (!name || !latitude || !longitude || !story) {
+      alert('Please add a name, latitude, longitude and short story.')
+      return
+    }
+
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+
+    const { error } = await supabase.from('locations').insert({
+      name,
+      slug: `${slug}-${Date.now()}`,
+      category,
+      location_type: 'Unknown',
+      country: 'Australia',
+      region,
+      city,
+      latitude,
+      longitude,
+      short_description: story,
+      mystery_score: null,
+      tags: [category, 'User Submitted'],
+      is_featured: false,
+      status: 'Needs Review'
+    })
+
+    if (error) {
+      console.error(error)
+      alert('Submission failed.')
+      return
+    }
+
+    alert('Thanks. Your mystery has been submitted for review.')
+    submitPanel.style.display = 'none'
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')
