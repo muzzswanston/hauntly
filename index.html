@@ -3,36 +3,110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Mystery Atlas - Mapping the Unexplained</title>
   <meta name="description" content="Explore haunted places, UFO hotspots, folklore sites, ley lines and unexplained mysteries from around the world." />
-
   <script type="module" src="/src/main.js"></script>
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     html,body{height:100%;width:100%;font-family:Georgia,serif;background:#08080d;color:#e0d8c3;overflow:hidden;}
+
     header{background:linear-gradient(135deg,#101018 0%,#25184f 100%);padding:1rem;text-align:center;border-bottom:3px double #c9a24e;}
     h1{font-size:2rem;color:#e8d39a;text-shadow:0 0 15px rgba(232,211,154,.45);}
     .subtitle{font-size:1rem;color:#b8a07e;margin:.3rem 0;}
     .description{max-width:760px;margin:.5rem auto;font-size:.9rem;color:#d7cfbd;}
+
+    #searchBox{width:min(520px,90%);padding:.75rem 1rem;border-radius:25px;border:1px solid #c9a24e;background:#111;color:#fff;margin-top:.8rem;}
+
     #controls,.category-bar{display:flex;justify-content:center;flex-wrap:wrap;gap:.6rem;margin-top:.8rem;}
     button,.category-pill{border:none;border-radius:25px;padding:.65rem 1rem;font-weight:bold;cursor:pointer;}
     button{background:linear-gradient(135deg,#6c5ce7,#8d79ff);color:white;}
     #leyToggle{background:linear-gradient(135deg,#8b5e1f,#c9a24e);}
     .category-pill{font-size:.8rem;border:1px solid rgba(201,162,78,.45);color:#e8d39a;background:rgba(255,255,255,.06);}
-    #searchBox{width:min(520px,90%);padding:.75rem 1rem;border-radius:25px;border:1px solid #c9a24e;background:#111;color:#fff;margin-top:.8rem;}
+
     #map{height:100%;width:100%;}
-    footer{text-align:center;padding:.7rem;background:#101018;color:#9d8d6f;border-top:3px double #c9a24e;font-size:.85rem;}
+
+    #resultsPanel{
+      position:fixed;
+      left:20px;
+      top:245px;
+      z-index:10;
+      width:320px;
+      max-height:55vh;
+      overflow-y:auto;
+      background:#101018;
+      border:1px solid #c9a24e;
+      border-radius:12px;
+      padding:1rem;
+      box-shadow:0 0 30px rgba(0,0,0,.5);
+    }
+
+    #resultsPanel h3{color:#e8d39a;margin-bottom:.7rem;}
+
+    .result-item{
+      padding:.7rem;
+      margin-bottom:.6rem;
+      border-radius:10px;
+      background:rgba(255,255,255,.06);
+      cursor:pointer;
+    }
+
+    .result-item:hover{background:rgba(201,162,78,.18);}
+    .result-item h4{color:#e8d39a;margin-bottom:.25rem;}
+    .result-item p{font-size:.85rem;color:#d7cfbd;margin-bottom:.25rem;}
 
     #submitPanel{
-      position:fixed;right:20px;top:180px;z-index:10;background:#101018;border:1px solid #c9a24e;
-      padding:1rem;border-radius:12px;width:300px;display:none;box-shadow:0 0 30px rgba(0,0,0,.5);
+      position:fixed;
+      right:20px;
+      top:245px;
+      z-index:10;
+      background:#101018;
+      border:1px solid #c9a24e;
+      padding:1rem;
+      border-radius:12px;
+      width:300px;
+      display:none;
+      box-shadow:0 0 30px rgba(0,0,0,.5);
     }
+
     #submitPanel input,#submitPanel textarea,#submitPanel select{
-      width:100%;margin:.35rem 0;padding:.55rem;border-radius:8px;border:1px solid #444;background:#1b1b2f;color:white;
+      width:100%;
+      margin:.35rem 0;
+      padding:.55rem;
+      border-radius:8px;
+      border:1px solid #444;
+      background:#1b1b2f;
+      color:white;
     }
+
     #submitPanel textarea{height:80px;}
+
+    footer{
+      text-align:center;
+      padding:.7rem;
+      background:#101018;
+      color:#9d8d6f;
+      border-top:3px double #c9a24e;
+      font-size:.85rem;
+    }
+
+    @media(max-width:800px){
+      #resultsPanel{
+        left:10px;
+        right:10px;
+        top:auto;
+        bottom:55px;
+        width:auto;
+        max-height:28vh;
+      }
+
+      #submitPanel{
+        left:10px;
+        right:10px;
+        top:180px;
+        width:auto;
+      }
+    }
   </style>
 </head>
 
@@ -59,6 +133,11 @@
       <span class="category-pill">Unexplained</span>
     </div>
   </header>
+
+  <div id="resultsPanel">
+    <h3>Results</h3>
+    <div id="resultsList"></div>
+  </div>
 
   <div id="submitPanel">
     <h3>Submit a Mystery</h3>
