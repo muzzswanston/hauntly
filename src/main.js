@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
- 
+
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
 if (!API_KEY) {
@@ -55,6 +55,7 @@ window.initMap = async function () {
   setupCategoryFilters()
   setupSearch()
   setupSubmitMystery()
+  setupMobileViewTabs()
 }
 
 async function loadLocations() {
@@ -138,6 +139,8 @@ function renderResultsList(locations) {
     item.addEventListener('click', () => {
       const matched = allMarkers[index]
       if (!matched) return
+
+      showMapView()
 
       map.setCenter({
         lat: Number(matched.location.latitude),
@@ -270,6 +273,46 @@ function updateLocationCount(count) {
   }
 }
 
+function setupMobileViewTabs() {
+  const mapViewBtn = document.getElementById('mapViewBtn')
+  const listViewBtn = document.getElementById('listViewBtn')
+
+  if (!mapViewBtn || !listViewBtn) return
+
+  document.body.classList.add('map-view')
+
+  mapViewBtn.onclick = showMapView
+  listViewBtn.onclick = showListView
+}
+
+function showMapView() {
+  const mapViewBtn = document.getElementById('mapViewBtn')
+  const listViewBtn = document.getElementById('listViewBtn')
+
+  document.body.classList.remove('list-view')
+  document.body.classList.add('map-view')
+
+  if (mapViewBtn) mapViewBtn.classList.add('active')
+  if (listViewBtn) listViewBtn.classList.remove('active')
+
+  if (map) {
+    setTimeout(() => {
+      google.maps.event.trigger(map, 'resize')
+    }, 100)
+  }
+}
+
+function showListView() {
+  const mapViewBtn = document.getElementById('mapViewBtn')
+  const listViewBtn = document.getElementById('listViewBtn')
+
+  document.body.classList.remove('map-view')
+  document.body.classList.add('list-view')
+
+  if (listViewBtn) listViewBtn.classList.add('active')
+  if (mapViewBtn) mapViewBtn.classList.remove('active')
+}
+
 function setupSubmitMystery() {
   const submitToggle = document.getElementById('submitToggle')
   const submitPanel = document.getElementById('submitPanel')
@@ -381,6 +424,7 @@ function centerOnUser() {
         lng: position.coords.longitude
       }
 
+      showMapView()
       map.setCenter(userLocation)
       map.setZoom(10)
 
