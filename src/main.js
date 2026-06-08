@@ -71,14 +71,11 @@ async function loadLocations() {
   }
 
   allLocations = data || []
-
-  console.log('Locations from Supabase:', allLocations)
-
-  renderMarkers(allLocations)
+  renderMarkers(allLocations, false)
   updateLocationCount(allLocations.length)
 }
 
-function renderMarkers(locations) {
+function renderMarkers(locations, shouldFitMap = true) {
   clearMarkers()
 
   locations.forEach((location) => {
@@ -105,13 +102,78 @@ function renderMarkers(locations) {
       infoWindow.open(map, marker)
     })
 
-    allMarkers.push(marker)
+    allMarkers.push({ marker, location, infoWindow })
   })
+
+  renderResultsList(locations)
+
+  if (shouldFitMap) {
+    fitMapToLocations(locations)
+  }
 }
 
 function clearMarkers() {
-  allMarkers.forEach((marker) => marker.setMap(null))
+  allMarkers.forEach((item) => item.marker.setMap(null))
   allMarkers = []
+}
+
+function renderResultsList(locations) {
+  const resultsList = document.getElementById('resultsList')
+  if (!resultsList) return
+
+  if (!locations.length) {
+    resultsList.innerHTML = '<p>No mysteries found.</p>'
+    return
+  }
+
+  resultsList.innerHTML = locations.map((location, index) => `
+    <div class="result-item" data-index="${index}">
+      <h4>${escapeHtml(location.name)}</h4>
+      <p>${escapeHtml(location.category || 'Unknown')} • ${escapeHtml(location.city || location.region || '')}</p>
+      <p>${escapeHtml(location.short_description || '')}</p>
+    </div>
+  `).join('')
+
+  document.querySelectorAll('.result-item').forEach((item, index) => {
+    item.addEventListener('click', () => {
+      const matched = allMarkers[index]
+      if (!matched) return
+
+      map.setCenter({
+        lat: Number(matched.location.latitude),
+        lng: Number(matched.location.longitude)
+      })
+
+      map.setZoom(12)
+      matched.infoWindow.open(map, matched.marker)
+    })
+  })
+}
+
+function fitMapToLocations(locations) {
+  const validLocations = locations.filter((location) => location.latitude && location.longitude)
+
+  if (!validLocations.length) return
+
+  if (validLocations.length === 1) {
+    map.setCenter({
+      lat: Number(validLocations[0].latitude),
+      lng: Number(validLocations[0].longitude)
+    })
+    map.setZoom(12)
+    return
+  }
+
+  const bounds = new google.maps.LatLngBounds()
+
+  validLocations.forEach((location) => {
+    bounds.extend({
+      lat: Number(location.latitude),
+      lng: Number(location.longitude)
+    })
+  })
+
+  map.fitBounds(bounds)
 }
 
 function getIconForLocation(location) {
@@ -132,40 +194,20 @@ function buildInfoWindowContent(location) {
       <p style="margin:0 0 6px;"><strong>Type:</strong> ${escapeHtml(location.location_type || 'Unknown')}</p>
       <p style="margin:0 0 6px;"><strong>Mystery Rating:</strong> ${score}</p>
       <p style="margin:0 0 8px;">${escapeHtml(location.short_description || '')}</p>
-      ${
-        location.access_notes
-          ? `<p style="margin:0 0 6px;"><strong>Access:</strong> ${escapeHtml(location.access_notes)}</p>`
-          : ''
-      }
-      ${
-        location.visitor_info
-          ? `<p style="margin:0 0 6px;"><strong>Visitor info:</strong> ${escapeHtml(location.visitor_info)}</p>`
-          : ''
-      }
-      ${
-        location.affiliate_url
-          ? `<a href="${escapeHtml(location.affiliate_url)}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px;">Book or explore nearby</a>`
-          : ''
-      }
-      ${
-        location.source_url
-          ? `<a href="${escapeHtml(location.source_url)}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px;">View source</a>`
-          : ''
-      }
+      ${location.access_notes ? `<p><strong>Access:</strong> ${escapeHtml(location.access_notes)}</p>` : ''}
+      ${location.visitor_info ? `<p><strong>Visitor info:</strong> ${escapeHtml(location.visitor_info)}</p>` : ''}
+      ${location.affiliate_url ? `<a href="${escapeHtml(location.affiliate_url)}" target="_blank" rel="noopener noreferrer">Book or explore nearby</a>` : ''}
+      ${location.source_url ? `<a href="${escapeHtml(location.source_url)}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px;">View source</a>` : ''}
     </div>
   `
 }
 
 function setupButtons() {
   const gpsBtn = document.getElementById('gpsBtn')
-  if (gpsBtn) {
-    gpsBtn.onclick = centerOnUser
-  }
+  if (gpsBtn) gpsBtn.onclick = centerOnUser
 
   const leyBtn = document.getElementById('leyToggle')
-  if (leyBtn) {
-    leyBtn.onclick = toggleLeyLines
-  }
+  if (leyBtn) leyBtn.onclick = toggleLeyLines
 }
 
 function setupCategoryFilters() {
@@ -193,7 +235,6 @@ function setupCategoryFilters() {
 function setupSearch() {
   const searchBox = document.getElementById('searchBox')
   if (!searchBox) return
-
   searchBox.addEventListener('input', applyFilters)
 }
 
@@ -218,7 +259,7 @@ function applyFilters() {
     return matchesSearch && matchesCategory
   })
 
-  renderMarkers(filtered)
+  renderMarkers(filtered, true)
   updateLocationCount(filtered.length)
 }
 
@@ -257,11 +298,9 @@ function setupSubmitMystery() {
       return
     }
 
-    const slug = createSlug(name)
-
     const { error } = await supabase.from('locations').insert({
       name,
-      slug: `${slug}-${Date.now()}`,
+      slug: `${createSlug(name)}-${Date.now()}`,
       category,
       location_type: 'Unknown',
       country: 'Australia',
@@ -289,16 +328,7 @@ function setupSubmitMystery() {
 }
 
 function clearSubmitForm() {
-  const fields = [
-    'submitName',
-    'submitCity',
-    'submitRegion',
-    'submitLat',
-    'submitLng',
-    'submitStory'
-  ]
-
-  fields.forEach((id) => {
+  ;['submitName','submitCity','submitRegion','submitLat','submitLng','submitStory'].forEach((id) => {
     const field = document.getElementById(id)
     if (field) field.value = ''
   })
@@ -308,9 +338,7 @@ function toggleLeyLines() {
   leyVisible = !leyVisible
 
   const leyBtn = document.getElementById('leyToggle')
-  if (leyBtn) {
-    leyBtn.textContent = leyVisible ? 'Hide Ley Lines' : '⚡ Ley Lines'
-  }
+  if (leyBtn) leyBtn.textContent = leyVisible ? 'Hide Ley Lines' : '⚡ Ley Lines'
 
   if (leyVisible) {
     leyLines = getLeyLinePaths().map((line) => {
@@ -336,13 +364,7 @@ function getLeyLinePaths() {
     { path: [{ lat: 51.1789, lng: -1.8262 }, { lat: 29.9792, lng: 31.1342 }], color: '#ff6b6b' },
     { path: [{ lat: -25.3444, lng: 131.0369 }, { lat: -13.1631, lng: -72.545 }], color: '#4ecdc4' },
     { path: [{ lat: 41.3095, lng: -122.3121 }, { lat: 25, lng: -71 }], color: '#45b7d1' },
-    { path: [{ lat: 50.7306, lng: -1.4994 }, { lat: 31.7683, lng: 35.2137 }], color: '#f9ca24' },
-    { path: [{ lat: 35.6762, lng: 139.6503 }, { lat: 13.4125, lng: 103.8669 }], color: '#f0932b' },
-    { path: [{ lat: 19.4326, lng: -99.1332 }, { lat: -27.1127, lng: -109.3497 }], color: '#eb4d4b' },
-    { path: [{ lat: 37.9838, lng: 23.7275 }, { lat: 27.1751, lng: 78.0421 }], color: '#6c5ce7' },
-    { path: [{ lat: -33.8568, lng: 151.2153 }, { lat: -37.8136, lng: 144.9631 }], color: '#a29bfe' },
-    { path: [{ lat: 40.7128, lng: -74.006 }, { lat: 48.8566, lng: 2.3522 }], color: '#fd79a8' },
-    { path: [{ lat: -33.4489, lng: -70.6693 }, { lat: -25.2637, lng: -57.5759 }], color: '#55efc4' }
+    { path: [{ lat: -33.8568, lng: 151.2153 }, { lat: -37.8136, lng: 144.9631 }], color: '#a29bfe' }
   ]
 }
 
@@ -362,9 +384,7 @@ function centerOnUser() {
       map.setCenter(userLocation)
       map.setZoom(10)
 
-      if (userMarker) {
-        userMarker.setMap(null)
-      }
+      if (userMarker) userMarker.setMap(null)
 
       userMarker = new google.maps.Marker({
         position: userLocation,
@@ -376,17 +396,12 @@ function centerOnUser() {
         }
       })
     },
-    () => {
-      alert('Unable to get your location.')
-    }
+    () => alert('Unable to get your location.')
   )
 }
 
 function createSlug(value) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
 function escapeHtml(value) {
