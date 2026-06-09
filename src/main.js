@@ -334,6 +334,7 @@ function setupSubmitMystery() {
   const submitToggle = document.getElementById('submitToggle')
   const submitPanel = document.getElementById('submitPanel')
   const submitBtn = document.getElementById('submitMysteryBtn')
+  const closeSubmitPanel = document.getElementById('closeSubmitPanel')
 
   if (!submitToggle || !submitPanel || !submitBtn) return
 
@@ -342,6 +343,12 @@ function setupSubmitMystery() {
       submitPanel.style.display === 'none' || submitPanel.style.display === ''
         ? 'block'
         : 'none'
+  }
+
+  if (closeSubmitPanel) {
+    closeSubmitPanel.onclick = () => {
+      submitPanel.style.display = 'none'
+    }
   }
 
   submitBtn.onclick = async () => {
