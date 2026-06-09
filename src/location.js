@@ -30,7 +30,6 @@ async function loadLocation() {
 
     populatePage(data)
     await loadNearbyLocations(data)
-
   } catch (err) {
     console.error(err)
     showNotFound()
@@ -40,8 +39,7 @@ async function loadLocation() {
 function populatePage(location) {
   document.title = `${location.name} | Mystery Atlas`
 
-  const heroImage =
-    document.getElementById('heroImage')
+  const heroImage = document.getElementById('heroImage')
 
   if (heroImage) {
     heroImage.src =
@@ -81,36 +79,59 @@ function populatePage(location) {
   buildMetaPanel(location)
 }
 
-async function loadNearbyLocations(location) {
-  const container =
-    document.getElementById('nearbyList')
+async function loadNearbyLocations(currentLocation) {
+  const container = document.getElementById('nearbyList')
 
   if (!container) return
 
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from('locations')
       .select('*')
-      .neq('id', location.id)
-      .limit(5)
+      .eq('status', 'Published')
+      .neq('id', currentLocation.id)
 
-    if (location.region) {
-      query = query.eq('region', location.region)
-    }
-
-    const { data } = await query
-
-    if (!data || !data.length) {
-      container.innerHTML =
-        '<p>No nearby mysteries found.</p>'
+    if (error || !data) {
+      container.innerHTML = '<p>Could not load nearby mysteries.</p>'
       return
     }
 
-    container.innerHTML = data
+    const nearby = data
+      .filter((item) => item.latitude && item.longitude)
+      .map((item) => ({
+        ...item,
+        distance_km: calculateDistanceKm(
+          Number(currentLocation.latitude),
+          Number(currentLocation.longitude),
+          Number(item.latitude),
+          Number(item.longitude)
+        )
+      }))
+      .sort((a, b) => {
+        const categoryPriorityA =
+          a.category === currentLocation.category ? 0 : 1
+
+        const categoryPriorityB =
+          b.category === currentLocation.category ? 0 : 1
+
+        if (categoryPriorityA !== categoryPriorityB) {
+          return categoryPriorityA - categoryPriorityB
+        }
+
+        return a.distance_km - b.distance_km
+      })
+      .slice(0, 5)
+
+    if (!nearby.length) {
+      container.innerHTML = '<p>No nearby mysteries found.</p>'
+      return
+    }
+
+    container.innerHTML = nearby
       .map(
         (item) => `
         <a
-          href="/location.html?slug=${item.slug}"
+          href="/location.html?slug=${escapeHtml(item.slug)}"
           style="
             display:block;
             margin:.75rem 0;
@@ -122,7 +143,11 @@ async function loadNearbyLocations(location) {
           "
         >
           <strong>${escapeHtml(item.name)}</strong><br>
-          <small>${escapeHtml(item.category || '')}</small>
+          <small>
+            ${escapeHtml(item.category || 'Unknown')}
+            • ${Math.round(item.distance_km)} km away
+          </small><br>
+          <span>${escapeHtml(item.short_description || '')}</span>
         </a>
       `
       )
@@ -135,8 +160,30 @@ async function loadNearbyLocations(location) {
   }
 }
 
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  const earthRadiusKm = 6371
+
+  const dLat = toRadians(lat2 - lat1)
+  const dLon = toRadians(lon2 - lon1)
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2)
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+  return earthRadiusKm * c
+}
+
+function toRadians(value) {
+  return value * Math.PI / 180
+}
+
 function buildMetaPanel(location) {
-  let panel = document.getElementById('metaPanel')
+  const panel = document.getElementById('metaPanel')
 
   if (!panel) return
 
@@ -162,13 +209,12 @@ function buildMetaPanel(location) {
     </div>
 
     <div class="meta-item">
-      <strong>Region</strong><br>
-      ${escapeHtml(location.region || '')}
-    </div>
-
-    <div class="meta-item">
-      <strong>Country</strong><br>
-      ${escapeHtml(location.country || '')}
+      <strong>Location</strong><br>
+      ${escapeHtml(
+        [location.city, location.region, location.country]
+          .filter(Boolean)
+          .join(', ')
+      )}
     </div>
 
     ${
@@ -183,11 +229,22 @@ function buildMetaPanel(location) {
     }
 
     ${
+      location.access_notes
+        ? `
+        <div class="meta-item">
+          <strong>Access</strong><br>
+          ${escapeHtml(location.access_notes)}
+        </div>
+      `
+        : ''
+    }
+
+    ${
       location.source_url
         ? `
         <div class="meta-item">
           <a
-            href="${location.source_url}"
+            href="${escapeHtml(location.source_url)}"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -203,7 +260,7 @@ function buildMetaPanel(location) {
         ? `
         <div class="meta-item">
           <a
-            href="${location.affiliate_url}"
+            href="${escapeHtml(location.affiliate_url)}"
             target="_blank"
             rel="noopener noreferrer"
           >
