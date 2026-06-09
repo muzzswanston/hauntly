@@ -211,6 +211,18 @@ function setupButtons() {
 
   const leyBtn = document.getElementById('leyToggle')
   if (leyBtn) leyBtn.onclick = toggleLeyLines
+
+  const filterToggle = document.getElementById('filterToggle')
+  const filtersPanel = document.getElementById('filtersPanel')
+
+  if (filterToggle && filtersPanel) {
+    filterToggle.onclick = () => {
+      filtersPanel.style.display =
+        filtersPanel.style.display === 'none' || filtersPanel.style.display === ''
+          ? 'block'
+          : 'none'
+    }
+  }
 }
 
 function setupCategoryFilters() {
@@ -231,6 +243,11 @@ function setupCategoryFilters() {
       pill.style.color = '#ffffff'
 
       applyFilters()
+
+      const filtersPanel = document.getElementById('filtersPanel')
+      if (filtersPanel && window.innerWidth <= 800) {
+        filtersPanel.style.display = 'none'
+      }
     })
   })
 }
@@ -381,7 +398,7 @@ function toggleLeyLines() {
   leyVisible = !leyVisible
 
   const leyBtn = document.getElementById('leyToggle')
-  if (leyBtn) leyBtn.textContent = leyVisible ? 'Hide Ley Lines' : '⚡ Ley Lines'
+  if (leyBtn) leyBtn.textContent = leyVisible ? '✕' : '⚡'
 
   if (leyVisible) {
     leyLines = getLeyLinePaths().map((line) => {
