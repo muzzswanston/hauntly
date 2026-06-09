@@ -21,10 +21,7 @@
       overflow:hidden;
     }
 
-    body{
-      display:flex;
-      flex-direction:column;
-    }
+    body{display:flex;flex-direction:column;}
 
     header{
       background:linear-gradient(135deg,#101018 0%,#25184f 100%);
@@ -41,18 +38,8 @@
       line-height:1.1;
     }
 
-    .subtitle{
-      font-size:.95rem;
-      color:#b8a07e;
-      margin:.25rem 0;
-    }
-
-    .description{
-      max-width:760px;
-      margin:.4rem auto;
-      font-size:.9rem;
-      color:#d7cfbd;
-    }
+    .subtitle{font-size:.95rem;color:#b8a07e;margin:.25rem 0;}
+    .description{max-width:760px;margin:.4rem auto;font-size:.9rem;color:#d7cfbd;}
 
     #searchBox{
       width:min(520px,92%);
@@ -82,21 +69,10 @@
       cursor:pointer;
     }
 
-    .view-tab.active{
-      background:rgba(201,162,78,.35);
-      color:#fff;
-    }
+    .view-tab.active{background:rgba(201,162,78,.35);color:#fff;}
 
-    #mapWrap{
-      position:relative;
-      flex:1;
-      min-height:0;
-    }
-
-    #map{
-      height:100%;
-      width:100%;
-    }
+    #mapWrap{position:relative;flex:1;min-height:0;}
+    #map{height:100%;width:100%;}
 
     #floatingControls{
       position:absolute;
@@ -120,9 +96,7 @@
       box-shadow:0 3px 12px rgba(0,0,0,.45);
     }
 
-    #leyToggle{
-      background:linear-gradient(135deg,#8b5e1f,#c9a24e)!important;
-    }
+    #leyToggle{background:linear-gradient(135deg,#8b5e1f,#c9a24e)!important;}
 
     #filterToggle{
       background:linear-gradient(135deg,#111,#3b2f5f)!important;
@@ -143,17 +117,9 @@
       box-shadow:0 0 30px rgba(0,0,0,.5);
     }
 
-    #filtersPanel h3{
-      color:#e8d39a;
-      margin-bottom:.5rem;
-      font-size:1rem;
-    }
+    #filtersPanel h3{color:#e8d39a;margin-bottom:.5rem;font-size:1rem;}
 
-    .category-bar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:.45rem;
-    }
+    .category-bar{display:flex;flex-wrap:wrap;gap:.45rem;}
 
     .category-pill{
       font-size:.8rem;
@@ -181,10 +147,7 @@
       box-shadow:0 0 30px rgba(0,0,0,.5);
     }
 
-    #resultsPanel h3{
-      color:#e8d39a;
-      margin-bottom:.7rem;
-    }
+    #resultsPanel h3{color:#e8d39a;margin-bottom:.7rem;}
 
     .result-item{
       padding:.7rem;
@@ -194,20 +157,9 @@
       cursor:pointer;
     }
 
-    .result-item:hover{
-      background:rgba(201,162,78,.18);
-    }
-
-    .result-item h4{
-      color:#e8d39a;
-      margin-bottom:.25rem;
-    }
-
-    .result-item p{
-      font-size:.85rem;
-      color:#d7cfbd;
-      margin-bottom:.25rem;
-    }
+    .result-item:hover{background:rgba(201,162,78,.18);}
+    .result-item h4{color:#e8d39a;margin-bottom:.25rem;}
+    .result-item p{font-size:.85rem;color:#d7cfbd;margin-bottom:.25rem;}
 
     #submitPanel{
       position:absolute;
@@ -217,10 +169,32 @@
       background:#101018;
       border:1px solid #c9a24e;
       padding:1rem;
+      padding-top:2.7rem;
       border-radius:12px;
       width:300px;
       display:none;
       box-shadow:0 0 30px rgba(0,0,0,.5);
+    }
+
+    #closeSubmitPanel{
+      position:absolute;
+      top:10px;
+      right:10px;
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      border:1px solid #c9a24e;
+      background:#1b1b2f;
+      color:#e8d39a;
+      cursor:pointer;
+      font-size:1rem;
+      font-weight:bold;
+      line-height:1;
+    }
+
+    #submitPanel h3{
+      color:#e8d39a;
+      margin-bottom:.5rem;
     }
 
     #submitPanel input,#submitPanel textarea,#submitPanel select{
@@ -231,10 +205,21 @@
       border:1px solid #444;
       background:#1b1b2f;
       color:white;
+      font-size:1rem;
     }
 
-    #submitPanel textarea{
-      height:80px;
+    #submitPanel textarea{height:80px;}
+
+    #submitMysteryBtn{
+      width:100%;
+      margin-top:.5rem;
+      padding:.7rem;
+      border:none;
+      border-radius:10px;
+      background:linear-gradient(135deg,#6c5ce7,#8d79ff);
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
     }
 
     footer{
@@ -248,30 +233,17 @@
     }
 
     @media(max-width:800px){
-      header{
-        padding:.55rem .7rem;
-      }
-
-      h1{
-        font-size:1.45rem;
-      }
-
-      .subtitle{
-        font-size:.8rem;
-      }
-
-      .desktop-only{
-        display:none;
-      }
+      header{padding:.55rem .7rem;}
+      h1{font-size:1.45rem;}
+      .subtitle{font-size:.8rem;}
+      .desktop-only{display:none;}
 
       #searchBox{
         padding:.6rem .9rem;
         margin-top:.35rem;
       }
 
-      #mobileViewTabs{
-        display:flex;
-      }
+      #mobileViewTabs{display:flex;}
 
       #resultsPanel{
         display:none;
@@ -286,36 +258,22 @@
         z-index:20;
       }
 
-      body.list-view #resultsPanel{
-        display:block;
-      }
-
-      body.list-view #map{
-        display:none;
-      }
-
-      body.map-view #resultsPanel{
-        display:none;
-      }
-
-      body.map-view #map{
-        display:block;
-      }
+      body.list-view #resultsPanel{display:block;}
+      body.list-view #map{display:none;}
+      body.map-view #resultsPanel{display:none;}
+      body.map-view #map{display:block;}
 
       #submitPanel{
         left:10px;
         right:10px;
         top:10px;
         width:auto;
+        max-height:calc(100vh - 180px);
+        overflow-y:auto;
       }
 
-      #filtersPanel{
-        width:210px;
-      }
-
-      footer{
-        display:none;
-      }
+      #filtersPanel{width:210px;}
+      footer{display:none;}
     }
   </style>
 </head>
@@ -364,11 +322,13 @@
     </div>
 
     <div id="submitPanel">
-  <button id="closeSubmitPanel" type="button">✕</button>
-  <h3>Submit a Mystery</h3>
+      <button id="closeSubmitPanel" type="button">✕</button>
+      <h3>Submit a Mystery</h3>
+
       <input id="submitName" placeholder="Location name" />
       <input id="submitCity" placeholder="City/Town" />
       <input id="submitRegion" placeholder="State/Region" />
+
       <select id="submitCategory">
         <option>Haunted</option>
         <option>UFO</option>
@@ -376,9 +336,11 @@
         <option>Cryptid</option>
         <option>Unexplained</option>
       </select>
+
       <input id="submitLat" placeholder="Latitude" />
       <input id="submitLng" placeholder="Longitude" />
       <textarea id="submitStory" placeholder="Short story or source"></textarea>
+
       <button id="submitMysteryBtn">Submit for Review</button>
     </div>
   </div>
