@@ -29,7 +29,11 @@ async function loadLocation() {
     }
 
     populatePage(data)
+
+    trackLocationView(data)
+
     await loadNearbyLocations(data)
+
   } catch (err) {
     console.error(err)
     showNotFound()
@@ -79,6 +83,16 @@ function populatePage(location) {
   buildMetaPanel(location)
 }
 
+function trackLocationView(location) {
+  if (!window.umami) return
+
+  window.umami.track('Location Viewed', {
+    location: location.name,
+    category: location.category || 'Unknown',
+    region: location.region || 'Unknown'
+  })
+}
+
 async function loadNearbyLocations(currentLocation) {
   const container = document.getElementById('nearbyList')
 
@@ -120,6 +134,10 @@ async function loadNearbyLocations(currentLocation) {
         (item) => `
         <a
           href="/location.html?slug=${escapeHtml(item.slug)}"
+          onclick="window.umami?.track('Nearby Mystery Click', {
+            location: '${escapeHtml(item.name)}',
+            category: '${escapeHtml(item.category || 'Unknown')}'
+          })"
           style="
             display:block;
             margin:.75rem 0;
@@ -131,11 +149,13 @@ async function loadNearbyLocations(currentLocation) {
           "
         >
           <strong>${escapeHtml(item.name)}</strong><br>
+
           <small>
             ${escapeHtml(item.category || 'Unknown')}
             • ${escapeHtml(item.location_type || 'Mystery')}
             • ${Math.round(item.distance_km)} km away
           </small><br>
+
           <span>${escapeHtml(item.short_description || '')}</span>
         </a>
       `
@@ -242,6 +262,7 @@ function buildMetaPanel(location) {
             href="${escapeHtml(location.source_url)}"
             target="_blank"
             rel="noopener noreferrer"
+            onclick="window.umami?.track('Source Link Click')"
           >
             Source Information
           </a>
@@ -258,6 +279,7 @@ function buildMetaPanel(location) {
             href="${escapeHtml(location.affiliate_url)}"
             target="_blank"
             rel="noopener noreferrer"
+            onclick="window.umami?.track('Affiliate Click')"
           >
             Book / Explore Nearby
           </a>
