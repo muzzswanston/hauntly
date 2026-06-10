@@ -107,19 +107,7 @@ async function loadNearbyLocations(currentLocation) {
           Number(item.longitude)
         )
       }))
-      .sort((a, b) => {
-        const categoryPriorityA =
-          a.category === currentLocation.category ? 0 : 1
-
-        const categoryPriorityB =
-          b.category === currentLocation.category ? 0 : 1
-
-        if (categoryPriorityA !== categoryPriorityB) {
-          return categoryPriorityA - categoryPriorityB
-        }
-
-        return a.distance_km - b.distance_km
-      })
+      .sort((a, b) => a.distance_km - b.distance_km)
       .slice(0, 5)
 
     if (!nearby.length) {
@@ -145,6 +133,7 @@ async function loadNearbyLocations(currentLocation) {
           <strong>${escapeHtml(item.name)}</strong><br>
           <small>
             ${escapeHtml(item.category || 'Unknown')}
+            • ${escapeHtml(item.location_type || 'Mystery')}
             • ${Math.round(item.distance_km)} km away
           </small><br>
           <span>${escapeHtml(item.short_description || '')}</span>
@@ -192,6 +181,8 @@ function buildMetaPanel(location) {
       ? `${location.mystery_score}/10`
       : 'N/A'
 
+  const stars = renderStars(location.mystery_score)
+
   panel.innerHTML = `
     <div class="meta-item">
       <strong>Category</strong><br>
@@ -205,6 +196,10 @@ function buildMetaPanel(location) {
 
     <div class="meta-item">
       <strong>Mystery Score</strong><br>
+      <span style="color:#c9a24e;letter-spacing:1px;">
+        ${stars}
+      </span>
+      <br>
       ${score}
     </div>
 
@@ -313,6 +308,13 @@ function showNotFound() {
       </a>
     </div>
   `
+}
+
+function renderStars(score) {
+  const value = Math.max(0, Math.min(10, Number(score) || 0))
+  const rounded = Math.round(value)
+
+  return '★'.repeat(rounded) + '☆'.repeat(10 - rounded)
 }
 
 function escapeHtml(value) {
