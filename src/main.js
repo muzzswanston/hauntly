@@ -37,8 +37,11 @@ let leyLines = []
 let leyVisible = false
 let activeCategory = 'All'
 let userMarker = null
+let searchTracked = false
 
 window.initMap = async function () {
+  trackEvent('Map Loaded')
+
   map = new google.maps.Map(document.getElementById('map'), {
     zoom: 4,
     center: { lat: -25.2744, lng: 133.7751 },
@@ -100,6 +103,11 @@ function renderMarkers(locations, shouldFitMap = true) {
     })
 
     marker.addListener('click', () => {
+      trackEvent('Open Map Popup', {
+        location: location.name,
+        category: location.category || 'Unknown'
+      })
+
       infoWindow.open(map, marker)
     })
 
@@ -139,6 +147,11 @@ function renderResultsList(locations) {
     item.addEventListener('click', () => {
       const matched = allMarkers[index]
       if (!matched) return
+
+      trackEvent('Click Result List Item', {
+        location: matched.location.name,
+        category: matched.location.category || 'Unknown'
+      })
 
       showMapView()
 
@@ -198,6 +211,7 @@ function buildInfoWindowContent(location) {
         <a
           href="/location.html?slug=${escapeHtml(location.slug)}"
           target="_blank"
+          onclick="window.umami?.track('View Full Mystery', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
           style="color:#2d1b69;text-decoration:none;"
         >
           ${escapeHtml(location.name)}
@@ -224,6 +238,7 @@ function buildInfoWindowContent(location) {
       <a
         href="/location.html?slug=${escapeHtml(location.slug)}"
         target="_blank"
+        onclick="window.umami?.track('View Full Mystery', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
         style="
           display:block;
           background:#6c5ce7;
@@ -243,6 +258,7 @@ function buildInfoWindowContent(location) {
         href="${mapsUrl}"
         target="_blank"
         rel="noopener noreferrer"
+        onclick="window.umami?.track('Get Directions', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
         style="
           display:block;
           background:#c9a24e;
@@ -265,6 +281,7 @@ function buildInfoWindowContent(location) {
               href="${escapeHtml(location.affiliate_url)}"
               target="_blank"
               rel="noopener noreferrer"
+              onclick="window.umami?.track('Stay Nearby', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
               style="
                 display:block;
                 background:#27ae60;
@@ -297,6 +314,8 @@ function setupButtons() {
 
   if (filterToggle && filtersPanel) {
     filterToggle.onclick = () => {
+      trackEvent('Toggle Filters')
+
       filtersPanel.style.display =
         filtersPanel.style.display === 'none' || filtersPanel.style.display === ''
           ? 'block'
@@ -313,6 +332,10 @@ function setupCategoryFilters() {
 
     pill.addEventListener('click', () => {
       activeCategory = pill.textContent.trim()
+
+      trackEvent('Filter Category', {
+        category: activeCategory
+      })
 
       pills.forEach((p) => {
         p.style.background = 'rgba(255,255,255,0.06)'
@@ -335,7 +358,19 @@ function setupCategoryFilters() {
 function setupSearch() {
   const searchBox = document.getElementById('searchBox')
   if (!searchBox) return
-  searchBox.addEventListener('input', applyFilters)
+
+  searchBox.addEventListener('input', () => {
+    if (!searchTracked && searchBox.value.trim().length >= 2) {
+      trackEvent('Search')
+      searchTracked = true
+    }
+
+    if (searchBox.value.trim().length === 0) {
+      searchTracked = false
+    }
+
+    applyFilters()
+  })
 }
 
 function applyFilters() {
@@ -378,8 +413,15 @@ function setupMobileViewTabs() {
 
   document.body.classList.add('map-view')
 
-  mapViewBtn.onclick = showMapView
-  listViewBtn.onclick = showListView
+  mapViewBtn.onclick = () => {
+    trackEvent('Mobile Map View')
+    showMapView()
+  }
+
+  listViewBtn.onclick = () => {
+    trackEvent('Mobile List View')
+    showListView()
+  }
 }
 
 function showMapView() {
@@ -419,6 +461,8 @@ function setupSubmitMystery() {
   if (!submitToggle || !submitPanel || !submitBtn) return
 
   submitToggle.onclick = () => {
+    trackEvent('Open Submit Form')
+
     submitPanel.style.display =
       submitPanel.style.display === 'none' || submitPanel.style.display === ''
         ? 'block'
@@ -427,6 +471,7 @@ function setupSubmitMystery() {
 
   if (closeSubmitPanel) {
     closeSubmitPanel.onclick = () => {
+      trackEvent('Close Submit Form')
       submitPanel.style.display = 'none'
     }
   }
@@ -441,6 +486,7 @@ function setupSubmitMystery() {
     const story = document.getElementById('submitStory').value.trim()
 
     if (!name || !latitude || !longitude || !story) {
+      trackEvent('Submit Form Validation Error')
       alert('Please add a name, latitude, longitude and short story.')
       return
     }
@@ -464,9 +510,15 @@ function setupSubmitMystery() {
 
     if (error) {
       console.error(error)
+      trackEvent('Mystery Submission Failed')
       alert('Submission failed.')
       return
     }
+
+    trackEvent('Mystery Submitted', {
+      category,
+      region: region || 'Unknown'
+    })
 
     alert('Thanks. Your mystery has been submitted for review.')
     clearSubmitForm()
@@ -483,6 +535,10 @@ function clearSubmitForm() {
 
 function toggleLeyLines() {
   leyVisible = !leyVisible
+
+  trackEvent('Toggle Ley Lines', {
+    visible: leyVisible ? 'true' : 'false'
+  })
 
   const leyBtn = document.getElementById('leyToggle')
   if (leyBtn) leyBtn.textContent = leyVisible ? '✕' : '⚡'
@@ -516,6 +572,8 @@ function getLeyLinePaths() {
 }
 
 function centerOnUser() {
+  trackEvent('Near Me Click')
+
   if (!navigator.geolocation) {
     alert('Geolocation is not supported by your browser.')
     return
@@ -523,6 +581,8 @@ function centerOnUser() {
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
+      trackEvent('Near Me Success')
+
       const userLocation = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
@@ -544,7 +604,10 @@ function centerOnUser() {
         }
       })
     },
-    () => alert('Unable to get your location.')
+    () => {
+      trackEvent('Near Me Failed')
+      alert('Unable to get your location.')
+    }
   )
 }
 
@@ -559,6 +622,21 @@ function renderStars(score) {
   return '★'.repeat(rounded) + '☆'.repeat(10 - rounded)
 }
 
+function trackEvent(eventName, eventData = {}) {
+  if (window.umami) {
+    window.umami.track(eventName, eventData)
+  }
+}
+
+function escapeAttribute(value) {
+  return String(value || '')
+    .replaceAll('\\', '\\\\')
+    .replaceAll("'", "\\'")
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -566,4 +644,4 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;')
-}
+              }
