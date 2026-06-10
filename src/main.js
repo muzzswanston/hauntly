@@ -189,6 +189,7 @@ function getIconForLocation(location) {
 
 function buildInfoWindowContent(location) {
   const score = location.mystery_score ? `${location.mystery_score}/10` : 'N/A'
+  const stars = renderStars(location.mystery_score)
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`
 
   return `
@@ -206,6 +207,10 @@ function buildInfoWindowContent(location) {
       <p style="margin:0 0 5px;">
         <strong>${escapeHtml(location.category || 'Unknown')}</strong>
         ${location.location_type ? ` • ${escapeHtml(location.location_type)}` : ''}
+      </p>
+
+      <p style="margin:0 0 4px;color:#c9a24e;font-size:1rem;letter-spacing:1px;">
+        ${stars}
       </p>
 
       <p style="margin:0 0 8px;">
@@ -545,6 +550,13 @@ function centerOnUser() {
 
 function createSlug(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+function renderStars(score) {
+  const value = Math.max(0, Math.min(10, Number(score) || 0))
+  const rounded = Math.round(value)
+
+  return '★'.repeat(rounded) + '☆'.repeat(10 - rounded)
 }
 
 function escapeHtml(value) {
