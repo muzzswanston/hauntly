@@ -189,18 +189,93 @@ function getIconForLocation(location) {
 
 function buildInfoWindowContent(location) {
   const score = location.mystery_score ? `${location.mystery_score}/10` : 'N/A'
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`
 
   return `
-    <div style="max-width:280px;font-family:Georgia;color:#111;">
-      <h3 style="margin:0 0 8px;">${escapeHtml(location.name)}</h3>
-      <p style="margin:0 0 6px;"><strong>Category:</strong> ${escapeHtml(location.category || 'Unknown')}</p>
-      <p style="margin:0 0 6px;"><strong>Type:</strong> ${escapeHtml(location.location_type || 'Unknown')}</p>
-      <p style="margin:0 0 6px;"><strong>Mystery Rating:</strong> ${score}</p>
-      <p style="margin:0 0 8px;">${escapeHtml(location.short_description || '')}</p>
-      ${location.access_notes ? `<p><strong>Access:</strong> ${escapeHtml(location.access_notes)}</p>` : ''}
-      ${location.visitor_info ? `<p><strong>Visitor info:</strong> ${escapeHtml(location.visitor_info)}</p>` : ''}
-      ${location.affiliate_url ? `<a href="${escapeHtml(location.affiliate_url)}" target="_blank" rel="noopener noreferrer">Book or explore nearby</a>` : ''}
-      ${location.source_url ? `<a href="${escapeHtml(location.source_url)}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:8px;">View source</a>` : ''}
+    <div style="max-width:290px;font-family:Georgia;color:#111;">
+      <h3 style="margin:0 0 8px;color:#2d1b69;">
+        <a
+          href="/location.html?slug=${escapeHtml(location.slug)}"
+          target="_blank"
+          style="color:#2d1b69;text-decoration:none;"
+        >
+          ${escapeHtml(location.name)}
+        </a>
+      </h3>
+
+      <p style="margin:0 0 5px;">
+        <strong>${escapeHtml(location.category || 'Unknown')}</strong>
+        ${location.location_type ? ` • ${escapeHtml(location.location_type)}` : ''}
+      </p>
+
+      <p style="margin:0 0 8px;">
+        Mystery Rating: ${score}
+      </p>
+
+      <p style="margin:0 0 12px;">
+        ${escapeHtml(location.short_description || '')}
+      </p>
+
+      <a
+        href="/location.html?slug=${escapeHtml(location.slug)}"
+        target="_blank"
+        style="
+          display:block;
+          background:#6c5ce7;
+          color:white;
+          text-decoration:none;
+          text-align:center;
+          padding:10px;
+          border-radius:8px;
+          margin-bottom:8px;
+          font-weight:bold;
+        "
+      >
+        View Full Mystery
+      </a>
+
+      <a
+        href="${mapsUrl}"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="
+          display:block;
+          background:#c9a24e;
+          color:white;
+          text-decoration:none;
+          text-align:center;
+          padding:10px;
+          border-radius:8px;
+          margin-bottom:8px;
+          font-weight:bold;
+        "
+      >
+        Directions
+      </a>
+
+      ${
+        location.affiliate_url
+          ? `
+            <a
+              href="${escapeHtml(location.affiliate_url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="
+                display:block;
+                background:#27ae60;
+                color:white;
+                text-decoration:none;
+                text-align:center;
+                padding:10px;
+                border-radius:8px;
+                font-weight:bold;
+              "
+            >
+              Stay Nearby
+            </a>
+          `
+          : ''
+      }
     </div>
   `
 }
