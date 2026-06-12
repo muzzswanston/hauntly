@@ -205,7 +205,7 @@ function renderLocations() {
       },
       map,
       title: location.name,
-      icon: createMarkerIcon(location.category)
+      icon: createMarkerIcon(location.category, location)
     })
 
     marker.addListener('click', () => openLocationInfo(location, marker))
@@ -220,12 +220,32 @@ function clearMarkers() {
   markers = []
 }
 
-function createMarkerIcon(category) {
+function getEvidenceColor(location) {
+  if (location.status === 'Researching') return '#ff9800'
+
+  switch (location.evidence_level) {
+    case 'Verified':
+      return '#2ecc71'
+    case 'Documented':
+      return '#c9a24e'
+    case 'Folklore':
+      return '#9b59b6'
+    case 'Researching':
+      return '#ff9800'
+    case 'User Submitted':
+      return '#3498db'
+    default:
+      return '#c9a24e'
+  }
+}
+
+function createMarkerIcon(category, location) {
   const emoji = CATEGORY_ICONS[category] || '❓'
+  const strokeColor = getEvidenceColor(location)
 
   const svg = `
     <svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="22" cy="22" r="18" fill="#111318" stroke="#c9a24e" stroke-width="3"/>
+      <circle cx="22" cy="22" r="18" fill="#111318" stroke="${strokeColor}" stroke-width="4"/>
       <text x="22" y="28" text-anchor="middle" font-size="20">${emoji}</text>
     </svg>
   `
@@ -413,7 +433,22 @@ function renderResults() {
 
 function getStatusBadge(location) {
   if (location.status === 'Researching') {
-    return `<span class="badge status-researching" style="display:inline-block;padding:2px 7px;border-radius:999px;background:#fff3cd;color:#5c4200;font-size:.75rem;font-weight:bold;">Researching</span>`
+    return `
+      <span
+        style="
+          display:inline-block;
+          padding:2px 8px;
+          border-radius:999px;
+          background:#ff9800;
+          color:white;
+          font-size:.75rem;
+          font-weight:bold;
+          text-transform:uppercase;
+        "
+      >
+        Researching
+      </span>
+    `
   }
 
   return ''
@@ -423,7 +458,24 @@ function getEvidenceBadge(location) {
   const level = location.evidence_level
   if (!level) return ''
 
-  return `<span class="badge evidence-badge" style="display:inline-block;padding:2px 7px;border-radius:999px;background:#e8d39a;color:#111;font-size:.75rem;font-weight:bold;">${escapeHtml(level)}</span>`
+  const color = getEvidenceColor(location)
+
+  return `
+    <span
+      style="
+        display:inline-block;
+        padding:2px 8px;
+        border-radius:999px;
+        background:${color};
+        color:white;
+        font-size:.75rem;
+        font-weight:bold;
+        text-transform:uppercase;
+      "
+    >
+      ${escapeHtml(level)}
+    </span>
+  `
 }
 
 function fitMapToMarkers() {
