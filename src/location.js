@@ -29,11 +29,8 @@ async function loadLocation() {
     }
 
     populatePage(data)
-
     trackLocationView(data)
-
-    await loadNearbyLocations(data)
-
+    await loadRelatedOrNearbyLocations(data)
   } catch (err) {
     console.error(err)
     showNotFound()
@@ -80,7 +77,30 @@ function populatePage(location) {
       'No visitor information available.'
   )
 
+  addWhyItMattersSection(location)
   buildMetaPanel(location)
+}
+
+function addWhyItMattersSection(location) {
+  if (!location.why_it_matters) return
+
+  const descriptionSection = document.getElementById('description')?.closest('.section')
+  if (!descriptionSection) return
+
+  const existing = document.getElementById('whyItMatters')
+  if (existing) {
+    existing.textContent = location.why_it_matters
+    return
+  }
+
+  const section = document.createElement('div')
+  section.className = 'section'
+  section.innerHTML = `
+    <h2>Why It Matters</h2>
+    <p id="whyItMatters">${escapeHtml(location.why_it_matters)}</p>
+  `
+
+  descriptionSection.insertAdjacentElement('afterend', section)
 }
 
 function trackLocationView(location) {
@@ -93,11 +113,45 @@ function trackLocationView(location) {
   })
 }
 
-async function loadNearbyLocations(currentLocation) {
+async function loadRelatedOrNearbyLocations(currentLocation) {
   const container = document.getElementById('nearbyList')
-
   if (!container) return
 
+  if (currentLocation.related_slugs && currentLocation.related_slugs.length > 0) {
+    await loadRelatedLocations(currentLocation, container)
+    return
+  }
+
+  await loadNearbyLocations(currentLocation, container)
+}
+
+async function loadRelatedLocations(currentLocation, container) {
+  try {
+    const { data, error } = await supabase
+      .from('locations')
+      .select('*')
+      .in('slug', currentLocation.related_slugs)
+      .eq('status', 'Published')
+
+    if (error || !data || !data.length) {
+      await loadNearbyLocations(currentLocation, container)
+      return
+    }
+
+    const ordered = currentLocation.related_slugs
+      .map((relatedSlug) => data.find((item) => item.slug === relatedSlug))
+      .filter(Boolean)
+
+    container.innerHTML = ordered
+      .map((item) => buildLocationCard(item, currentLocation, true))
+      .join('')
+  } catch (err) {
+    console.error(err)
+    await loadNearbyLocations(currentLocation, container)
+  }
+}
+
+async function loadNearbyLocations(currentLocation, container) {
   try {
     const { data, error } = await supabase
       .from('locations')
@@ -130,43 +184,48 @@ async function loadNearbyLocations(currentLocation) {
     }
 
     container.innerHTML = nearby
-      .map(
-        (item) => `
-        <a
-          href="/location.html?slug=${escapeHtml(item.slug)}"
-          onclick="window.umami?.track('Nearby Mystery Click', {
-            location: '${escapeHtml(item.name)}',
-            category: '${escapeHtml(item.category || 'Unknown')}'
-          })"
-          style="
-            display:block;
-            margin:.75rem 0;
-            color:#e8d39a;
-            text-decoration:none;
-            padding:.75rem;
-            background:#1b1b2f;
-            border-radius:8px;
-          "
-        >
-          <strong>${escapeHtml(item.name)}</strong><br>
-
-          <small>
-            ${escapeHtml(item.category || 'Unknown')}
-            • ${escapeHtml(item.location_type || 'Mystery')}
-            • ${Math.round(item.distance_km)} km away
-          </small><br>
-
-          <span>${escapeHtml(item.short_description || '')}</span>
-        </a>
-      `
-      )
+      .map((item) => buildLocationCard(item, currentLocation, false))
       .join('')
   } catch (err) {
     console.error(err)
-
-    container.innerHTML =
-      '<p>Could not load nearby mysteries.</p>'
+    container.innerHTML = '<p>Could not load nearby mysteries.</p>'
   }
+}
+
+function buildLocationCard(item, currentLocation, isRelated) {
+  const distanceText =
+    !isRelated && item.distance_km
+      ? ` • ${Math.round(item.distance_km)} km away`
+      : ''
+
+  return `
+    <a
+      href="/location.html?slug=${escapeHtml(item.slug)}"
+      onclick="window.umami?.track('${isRelated ? 'Related Mystery Click' : 'Nearby Mystery Click'}', {
+        location: '${escapeAttribute(item.name)}',
+        category: '${escapeAttribute(item.category || 'Unknown')}'
+      })"
+      style="
+        display:block;
+        margin:.75rem 0;
+        color:#e8d39a;
+        text-decoration:none;
+        padding:.75rem;
+        background:#1b1b2f;
+        border-radius:8px;
+      "
+    >
+      <strong>${escapeHtml(item.name)}</strong><br>
+
+      <small>
+        ${escapeHtml(item.category || 'Unknown')}
+        • ${escapeHtml(item.location_type || 'Mystery')}
+        ${distanceText}
+      </small><br>
+
+      <span>${escapeHtml(item.short_description || '')}</span>
+    </a>
+  `
 }
 
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
@@ -262,7 +321,9 @@ function buildMetaPanel(location) {
             href="${escapeHtml(location.source_url)}"
             target="_blank"
             rel="noopener noreferrer"
-            onclick="window.umami?.track('Source Link Click')"
+            onclick="window.umami?.track('Source Link Click', {
+              location: '${escapeAttribute(location.name)}'
+            })"
           >
             Source Information
           </a>
@@ -279,7 +340,9 @@ function buildMetaPanel(location) {
             href="${escapeHtml(location.affiliate_url)}"
             target="_blank"
             rel="noopener noreferrer"
-            onclick="window.umami?.track('Affiliate Click')"
+            onclick="window.umami?.track('Affiliate Click', {
+              location: '${escapeAttribute(location.name)}'
+            })"
           >
             Book / Explore Nearby
           </a>
@@ -337,6 +400,15 @@ function renderStars(score) {
   const rounded = Math.round(value)
 
   return '★'.repeat(rounded) + '☆'.repeat(10 - rounded)
+}
+
+function escapeAttribute(value) {
+  return String(value || '')
+    .replaceAll('\\', '\\\\')
+    .replaceAll("'", "\\'")
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
 }
 
 function escapeHtml(value) {
