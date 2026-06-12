@@ -1,647 +1,580 @@
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from "./supabaseClient.js";
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+let map;
+let allLocations = [];
+let filteredLocations = [];
+let markers = [];
+let infoWindow;
+let selectedCategory = "All";
+let leyLinesVisible = false;
+let leyLinePolylines = [];
+let userMarker = null;
 
-if (!API_KEY) {
-  document.body.innerHTML =
-    '<div style="background:#000;color:#ff6b6b;text-align:center;padding:4rem;font-family:Georgia;"><h1>API Key Missing</h1><p>Add <strong>VITE_GOOGLE_MAPS_API_KEY</strong> in Vercel Environment Variables</p></div>'
-} else {
-  const script = document.createElement('script')
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&loading=async&callback=initMap&libraries=geometry`
-  script.async = true
-  document.head.appendChild(script)
-}
+const DEFAULT_CENTER = { lat: -25.2744, lng: 133.7751 };
+const DEFAULT_ZOOM = 4;
 
-const HAUNTED_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%236c5ce7' stroke='%23000' stroke-width='3'/%3E%3Ctext x='20' y='25' font-size='16' text-anchor='middle' fill='%23fff'%3E%F0%9F%91%BB%3C/text%3E%3C/svg%3E"
+const CATEGORY_ICONS = {
+  Haunted: "👻",
+  UFO: "🛸",
+  Folklore: "📜",
+  Cryptid: "🐾",
+  Unexplained: "❓",
+};
 
-const UFO_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%239458ff' stroke='%23000' stroke-width='3'/%3E%3Ctext x='20' y='25' font-size='16' text-anchor='middle' fill='%23fff'%3E%F0%9F%9B%B8%3C/text%3E%3C/svg%3E"
-
-const FOLKLORE_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23c9a24e' stroke='%23000' stroke-width='3'/%3E%3Ctext x='20' y='25' font-size='16' text-anchor='middle' fill='%23fff'%3E%F0%9F%93%9C%3C/text%3E%3C/svg%3E"
-
-const CRYPTID_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%2327ae60' stroke='%23000' stroke-width='3'/%3E%3Ctext x='20' y='25' font-size='16' text-anchor='middle' fill='%23fff'%3E%F0%9F%90%BE%3C/text%3E%3C/svg%3E"
-
-const UNEXPLAINED_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%23ff6b6b' stroke='%23000' stroke-width='3'/%3E%3Ctext x='20' y='25' font-size='16' text-anchor='middle' fill='%23fff'%3E%3F%3C/text%3E%3C/svg%3E"
-
-const USER_LOCATION_ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='18' fill='%230098ff' stroke='%23000' stroke-width='3'/%3E%3Ctext x='20' y='25' font-size='16' text-anchor='middle' fill='%23fff'%3E%F0%9F%93%8D%3C/text%3E%3C/svg%3E"
-
-let map
-let allLocations = []
-let allMarkers = []
-let leyLines = []
-let leyVisible = false
-let activeCategory = 'All'
-let userMarker = null
-let searchTracked = false
-
-window.initMap = async function () {
-  trackEvent('Map Loaded')
-
-  map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 4,
-    center: { lat: -25.2744, lng: 133.7751 },
+window.initMap = async function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: DEFAULT_CENTER,
+    zoom: DEFAULT_ZOOM,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
     styles: [
-      { featureType: 'all', elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-      { featureType: 'all', elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-      { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
-      { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] }
-    ]
-  })
+      { elementType: "geometry", stylers: [{ color: "#1b1b1f" }] },
+      { elementType: "labels.text.stroke", stylers: [{ color: "#1b1b1f" }] },
+      { elementType: "labels.text.fill", stylers: [{ color: "#c9a24e" }] },
+      {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#101827" }],
+      },
+      {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#2b2b31" }],
+      },
+    ],
+  });
 
-  await loadLocations()
-  setupButtons()
-  setupCategoryFilters()
-  setupSearch()
-  setupSubmitMystery()
-  setupMobileViewTabs()
-}
+  infoWindow = new google.maps.InfoWindow();
+
+  setupEventListeners();
+  setupLeyLines();
+  await loadLocations();
+};
 
 async function loadLocations() {
   const { data, error } = await supabase
-    .from('locations')
-    .select('*')
-    .eq('status', 'Published')
-    .order('name', { ascending: true })
+    .from("locations")
+    .select("*")
+    .in("status", ["Published", "Researching"])
+    .order("name", { ascending: true });
 
   if (error) {
-    console.error('Supabase error:', error)
-    alert('Could not load Mystery Atlas locations from Supabase.')
-    return
+    console.error("Error loading locations:", error);
+    return;
   }
 
-  allLocations = data || []
-  renderMarkers(allLocations, false)
-  updateLocationCount(allLocations.length)
+  allLocations = data || [];
+  filteredLocations = [...allLocations];
+
+  renderLocations();
+  renderResults();
+  updateSubtitle();
 }
 
-function renderMarkers(locations, shouldFitMap = true) {
-  clearMarkers()
+function setupEventListeners() {
+  const searchInput = document.getElementById("searchInput");
+  const categoryButtons = document.querySelectorAll("[data-category]");
+  const gpsButton = document.getElementById("gpsButton");
+  const leyLinesButton = document.getElementById("leyLinesButton");
+  const mapViewBtn = document.getElementById("mapViewBtn");
+  const listViewBtn = document.getElementById("listViewBtn");
+  const submitForm = document.getElementById("submitMysteryForm");
 
-  locations.forEach((location) => {
-    if (!location.latitude || !location.longitude) return
+  if (searchInput) {
+    searchInput.addEventListener("input", applyFilters);
+  }
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedCategory = button.dataset.category;
+
+      categoryButtons.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      applyFilters();
+    });
+  });
+
+  if (gpsButton) {
+    gpsButton.addEventListener("click", centerOnUser);
+  }
+
+  if (leyLinesButton) {
+    leyLinesButton.addEventListener("click", toggleLeyLines);
+  }
+
+  if (mapViewBtn && listViewBtn) {
+    mapViewBtn.addEventListener("click", () => setMobileView("map"));
+    listViewBtn.addEventListener("click", () => setMobileView("list"));
+  }
+
+  if (submitForm) {
+    submitForm.addEventListener("submit", handleSubmitMystery);
+  }
+}
+
+function applyFilters() {
+  const searchInput = document.getElementById("searchInput");
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+  filteredLocations = allLocations.filter((location) => {
+    const matchesCategory =
+      selectedCategory === "All" || location.category === selectedCategory;
+
+    const searchableText = [
+      location.name,
+      location.city,
+      location.region,
+      location.country,
+      location.category,
+      location.location_type,
+      location.short_description,
+      location.why_it_matters,
+      location.evidence_level,
+      location.status,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch = !query || searchableText.includes(query);
+
+    return matchesCategory && matchesSearch;
+  });
+
+  renderLocations();
+  renderResults();
+  updateSubtitle();
+}
+
+function renderLocations() {
+  clearMarkers();
+
+  filteredLocations.forEach((location) => {
+    if (!location.latitude || !location.longitude) return;
 
     const marker = new google.maps.Marker({
       position: {
         lat: Number(location.latitude),
-        lng: Number(location.longitude)
+        lng: Number(location.longitude),
       },
       map,
       title: location.name,
-      icon: {
-        url: getIconForLocation(location),
-        scaledSize: new google.maps.Size(40, 40)
-      }
-    })
+      icon: createMarkerIcon(location.category),
+    });
 
-    const infoWindow = new google.maps.InfoWindow({
-      content: buildInfoWindowContent(location)
-    })
+    marker.addListener("click", () => openLocationInfo(location, marker));
 
-    marker.addListener('click', () => {
-      trackEvent('Open Map Popup', {
-        location: location.name,
-        category: location.category || 'Unknown'
-      })
+    markers.push(marker);
+  });
 
-      infoWindow.open(map, marker)
-    })
-
-    allMarkers.push({ marker, location, infoWindow })
-  })
-
-  renderResultsList(locations)
-
-  if (shouldFitMap) {
-    fitMapToLocations(locations)
-  }
+  fitMapToMarkers();
 }
 
 function clearMarkers() {
-  allMarkers.forEach((item) => item.marker.setMap(null))
-  allMarkers = []
+  markers.forEach((marker) => marker.setMap(null));
+  markers = [];
 }
 
-function renderResultsList(locations) {
-  const resultsList = document.getElementById('resultsList')
-  if (!resultsList) return
+function createMarkerIcon(category) {
+  const emoji = CATEGORY_ICONS[category] || "❓";
 
-  if (!locations.length) {
-    resultsList.innerHTML = '<p>No mysteries found.</p>'
-    return
-  }
+  const svg = `
+    <svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="22" r="18" fill="#111318" stroke="#c9a24e" stroke-width="3"/>
+      <text x="22" y="28" text-anchor="middle" font-size="20">${emoji}</text>
+    </svg>
+  `;
 
-  resultsList.innerHTML = locations.map((location, index) => `
-    <div class="result-item" data-index="${index}">
-      <h4>${escapeHtml(location.name)}</h4>
-      <p>${escapeHtml(location.category || 'Unknown')} • ${escapeHtml(location.city || location.region || '')}</p>
-      <p>${escapeHtml(location.short_description || '')}</p>
-    </div>
-  `).join('')
-
-  document.querySelectorAll('.result-item').forEach((item, index) => {
-    item.addEventListener('click', () => {
-      const matched = allMarkers[index]
-      if (!matched) return
-
-      trackEvent('Click Result List Item', {
-        location: matched.location.name,
-        category: matched.location.category || 'Unknown'
-      })
-
-      showMapView()
-
-      map.setCenter({
-        lat: Number(matched.location.latitude),
-        lng: Number(matched.location.longitude)
-      })
-
-      map.setZoom(12)
-      matched.infoWindow.open(map, matched.marker)
-    })
-  })
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(44, 44),
+    anchor: new google.maps.Point(22, 22),
+  };
 }
 
-function fitMapToLocations(locations) {
-  const validLocations = locations.filter((location) => location.latitude && location.longitude)
+function openLocationInfo(location, marker) {
+  const imageHtml = location.image_url
+    ? `
+      <img
+        class="info-image"
+        src="${escapeHtml(location.image_url)}"
+        alt="${escapeHtml(location.image_alt_text || location.name)}"
+      />
+    `
+    : "";
 
-  if (!validLocations.length) return
+  const imageCreditHtml =
+    location.image_credit || location.image_license || location.image_source
+      ? `
+        <div class="image-credit">
+          ${location.image_credit ? `Credit: ${escapeHtml(location.image_credit)}` : ""}
+          ${location.image_license ? ` • ${escapeHtml(location.image_license)}` : ""}
+          ${
+            location.image_source
+              ? ` • <a href="${escapeHtml(location.image_source)}" target="_blank" rel="noopener">Image source</a>`
+              : ""
+          }
+        </div>
+      `
+      : "";
 
-  if (validLocations.length === 1) {
-    map.setCenter({
-      lat: Number(validLocations[0].latitude),
-      lng: Number(validLocations[0].longitude)
-    })
-    map.setZoom(12)
-    return
-  }
+  const sourceHtml = location.source_url
+    ? `<a href="${escapeHtml(location.source_url)}" target="_blank" rel="noopener">View source</a>`
+    : "";
 
-  const bounds = new google.maps.LatLngBounds()
+  const affiliateHtml = location.affiliate_url
+    ? `<a href="${escapeHtml(location.affiliate_url)}" target="_blank" rel="noopener">Book or explore nearby</a>`
+    : "";
 
-  validLocations.forEach((location) => {
-    bounds.extend({
-      lat: Number(location.latitude),
-      lng: Number(location.longitude)
-    })
-  })
+  const infoHtml = `
+    <div class="info-window">
+      ${imageHtml}
+      ${imageCreditHtml}
 
-  map.fitBounds(bounds)
-}
+      <h3>${escapeHtml(location.name)}</h3>
 
-function getIconForLocation(location) {
-  if (location.category === 'UFO') return UFO_ICON
-  if (location.category === 'Folklore') return FOLKLORE_ICON
-  if (location.category === 'Cryptid') return CRYPTID_ICON
-  if (location.category === 'Unexplained') return UNEXPLAINED_ICON
-  return HAUNTED_ICON
-}
+      <div class="badge-row">
+        ${getStatusBadge(location)}
+        ${getEvidenceBadge(location)}
+      </div>
 
-function buildInfoWindowContent(location) {
-  const score = location.mystery_score ? `${location.mystery_score}/10` : 'N/A'
-  const stars = renderStars(location.mystery_score)
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`
-
-  return `
-    <div style="max-width:290px;font-family:Georgia;color:#111;">
-      <h3 style="margin:0 0 8px;color:#2d1b69;">
-        <a
-          href="/location.html?slug=${escapeHtml(location.slug)}"
-          target="_blank"
-          onclick="window.umami?.track('View Full Mystery', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
-          style="color:#2d1b69;text-decoration:none;"
-        >
-          ${escapeHtml(location.name)}
-        </a>
-      </h3>
-
-      <p style="margin:0 0 5px;">
-        <strong>${escapeHtml(location.category || 'Unknown')}</strong>
-        ${location.location_type ? ` • ${escapeHtml(location.location_type)}` : ''}
+      <p class="info-meta">
+        <strong>${escapeHtml(location.category || "Unknown")}</strong>
+        ${location.location_type ? ` • ${escapeHtml(location.location_type)}` : ""}
       </p>
-
-      <p style="margin:0 0 4px;color:#c9a24e;font-size:1rem;letter-spacing:1px;">
-        ${stars}
-      </p>
-
-      <p style="margin:0 0 8px;">
-        Mystery Rating: ${score}
-      </p>
-
-      <p style="margin:0 0 12px;">
-        ${escapeHtml(location.short_description || '')}
-      </p>
-
-      <a
-        href="/location.html?slug=${escapeHtml(location.slug)}"
-        target="_blank"
-        onclick="window.umami?.track('View Full Mystery', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
-        style="
-          display:block;
-          background:#6c5ce7;
-          color:white;
-          text-decoration:none;
-          text-align:center;
-          padding:10px;
-          border-radius:8px;
-          margin-bottom:8px;
-          font-weight:bold;
-        "
-      >
-        View Full Mystery
-      </a>
-
-      <a
-        href="${mapsUrl}"
-        target="_blank"
-        rel="noopener noreferrer"
-        onclick="window.umami?.track('Get Directions', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
-        style="
-          display:block;
-          background:#c9a24e;
-          color:white;
-          text-decoration:none;
-          text-align:center;
-          padding:10px;
-          border-radius:8px;
-          margin-bottom:8px;
-          font-weight:bold;
-        "
-      >
-        Directions
-      </a>
 
       ${
-        location.affiliate_url
-          ? `
-            <a
-              href="${escapeHtml(location.affiliate_url)}"
-              target="_blank"
-              rel="noopener noreferrer"
-              onclick="window.umami?.track('Stay Nearby', { location: '${escapeAttribute(location.name)}', category: '${escapeAttribute(location.category || 'Unknown')}' })"
-              style="
-                display:block;
-                background:#27ae60;
-                color:white;
-                text-decoration:none;
-                text-align:center;
-                padding:10px;
-                border-radius:8px;
-                font-weight:bold;
-              "
-            >
-              Stay Nearby
-            </a>
-          `
-          : ''
+        location.short_description
+          ? `<p>${escapeHtml(location.short_description)}</p>`
+          : ""
       }
+
+      <p><strong>Mystery Score:</strong> ${location.mystery_score || "?"}/10</p>
+
+      ${
+        location.why_it_matters
+          ? `<p><strong>Why it matters:</strong> ${escapeHtml(location.why_it_matters)}</p>`
+          : ""
+      }
+
+      ${
+        location.access_notes
+          ? `<p><strong>Access:</strong> ${escapeHtml(location.access_notes)}</p>`
+          : ""
+      }
+
+      ${
+        location.visitor_info
+          ? `<p><strong>Visitor info:</strong> ${escapeHtml(location.visitor_info)}</p>`
+          : ""
+      }
+
+      <div class="info-links">
+        ${sourceHtml}
+        ${affiliateHtml}
+      </div>
     </div>
-  `
+  `;
+
+  infoWindow.setContent(infoHtml);
+  infoWindow.open(map, marker);
 }
 
-function setupButtons() {
-  const gpsBtn = document.getElementById('gpsBtn')
-  if (gpsBtn) gpsBtn.onclick = centerOnUser
+function renderResults() {
+  const resultsList = document.getElementById("resultsList");
+  if (!resultsList) return;
 
-  const leyBtn = document.getElementById('leyToggle')
-  if (leyBtn) leyBtn.onclick = toggleLeyLines
+  resultsList.innerHTML = "";
 
-  const filterToggle = document.getElementById('filterToggle')
-  const filtersPanel = document.getElementById('filtersPanel')
-
-  if (filterToggle && filtersPanel) {
-    filterToggle.onclick = () => {
-      trackEvent('Toggle Filters')
-
-      filtersPanel.style.display =
-        filtersPanel.style.display === 'none' || filtersPanel.style.display === ''
-          ? 'block'
-          : 'none'
-    }
+  if (filteredLocations.length === 0) {
+    resultsList.innerHTML = `
+      <div class="empty-state">
+        No mysteries found. Try another search or category.
+      </div>
+    `;
+    return;
   }
-}
 
-function setupCategoryFilters() {
-  const pills = document.querySelectorAll('.category-pill')
+  filteredLocations.forEach((location) => {
+    const card = document.createElement("button");
+    card.className = "result-card";
+    card.type = "button";
 
-  pills.forEach((pill) => {
-    pill.style.cursor = 'pointer'
+    card.innerHTML = `
+      <div class="result-header">
+        <strong>${escapeHtml(location.name)}</strong>
+      </div>
 
-    pill.addEventListener('click', () => {
-      activeCategory = pill.textContent.trim()
+      <div class="badge-row">
+        ${getStatusBadge(location)}
+        ${getEvidenceBadge(location)}
+      </div>
 
-      trackEvent('Filter Category', {
-        category: activeCategory
-      })
+      <div class="result-meta">
+        ${escapeHtml(location.category || "Unknown")}
+        ${location.city ? ` • ${escapeHtml(location.city)}` : ""}
+        ${location.region ? `, ${escapeHtml(location.region)}` : ""}
+      </div>
 
-      pills.forEach((p) => {
-        p.style.background = 'rgba(255,255,255,0.06)'
-        p.style.color = '#e8d39a'
-      })
-
-      pill.style.background = 'rgba(201,162,78,0.25)'
-      pill.style.color = '#ffffff'
-
-      applyFilters()
-
-      const filtersPanel = document.getElementById('filtersPanel')
-      if (filtersPanel && window.innerWidth <= 800) {
-        filtersPanel.style.display = 'none'
+      ${
+        location.short_description
+          ? `<p>${escapeHtml(location.short_description)}</p>`
+          : ""
       }
-    })
-  })
+    `;
+
+    card.addEventListener("click", () => {
+      const marker = markers.find(
+        (m) =>
+          Number(m.getPosition().lat()).toFixed(6) ===
+            Number(location.latitude).toFixed(6) &&
+          Number(m.getPosition().lng()).toFixed(6) ===
+            Number(location.longitude).toFixed(6)
+      );
+
+      if (location.latitude && location.longitude) {
+        map.setCenter({
+          lat: Number(location.latitude),
+          lng: Number(location.longitude),
+        });
+        map.setZoom(12);
+      }
+
+      if (marker) {
+        openLocationInfo(location, marker);
+      }
+
+      setMobileView("map");
+    });
+
+    resultsList.appendChild(card);
+  });
 }
 
-function setupSearch() {
-  const searchBox = document.getElementById('searchBox')
-  if (!searchBox) return
-
-  searchBox.addEventListener('input', () => {
-    if (!searchTracked && searchBox.value.trim().length >= 2) {
-      trackEvent('Search')
-      searchTracked = true
-    }
-
-    if (searchBox.value.trim().length === 0) {
-      searchTracked = false
-    }
-
-    applyFilters()
-  })
-}
-
-function applyFilters() {
-  const searchBox = document.getElementById('searchBox')
-  const term = searchBox ? searchBox.value.toLowerCase().trim() : ''
-
-  const filtered = allLocations.filter((location) => {
-    const matchesSearch =
-      !term ||
-      location.name?.toLowerCase().includes(term) ||
-      location.city?.toLowerCase().includes(term) ||
-      location.region?.toLowerCase().includes(term) ||
-      location.country?.toLowerCase().includes(term) ||
-      location.category?.toLowerCase().includes(term) ||
-      location.location_type?.toLowerCase().includes(term) ||
-      location.short_description?.toLowerCase().includes(term)
-
-    const matchesCategory =
-      activeCategory === 'All' || location.category === activeCategory
-
-    return matchesSearch && matchesCategory
-  })
-
-  renderMarkers(filtered, true)
-  updateLocationCount(filtered.length)
-}
-
-function updateLocationCount(count) {
-  const subtitle = document.querySelector('.subtitle')
-  if (subtitle) {
-    subtitle.textContent = `${count} mysteries mapped • Mapping the Unexplained`
-  }
-}
-
-function setupMobileViewTabs() {
-  const mapViewBtn = document.getElementById('mapViewBtn')
-  const listViewBtn = document.getElementById('listViewBtn')
-
-  if (!mapViewBtn || !listViewBtn) return
-
-  document.body.classList.add('map-view')
-
-  mapViewBtn.onclick = () => {
-    trackEvent('Mobile Map View')
-    showMapView()
+function getStatusBadge(location) {
+  if (location.status === "Researching") {
+    return `<span class="badge status-researching">Researching</span>`;
   }
 
-  listViewBtn.onclick = () => {
-    trackEvent('Mobile List View')
-    showListView()
-  }
+  return "";
 }
 
-function showMapView() {
-  const mapViewBtn = document.getElementById('mapViewBtn')
-  const listViewBtn = document.getElementById('listViewBtn')
+function getEvidenceBadge(location) {
+  const level = location.evidence_level;
 
-  document.body.classList.remove('list-view')
-  document.body.classList.add('map-view')
+  if (!level) return "";
 
-  if (mapViewBtn) mapViewBtn.classList.add('active')
-  if (listViewBtn) listViewBtn.classList.remove('active')
+  const badgeClasses = {
+    Verified: "evidence-verified",
+    Documented: "evidence-documented",
+    Folklore: "evidence-folklore",
+    Researching: "evidence-researching",
+    "User Submitted": "evidence-user-submitted",
+  };
 
-  if (map) {
-    setTimeout(() => {
-      google.maps.event.trigger(map, 'resize')
-    }, 100)
-  }
+  const className = badgeClasses[level] || "evidence-unknown";
+
+  return `<span class="badge ${className}">${escapeHtml(level)}</span>`;
 }
 
-function showListView() {
-  const mapViewBtn = document.getElementById('mapViewBtn')
-  const listViewBtn = document.getElementById('listViewBtn')
-
-  document.body.classList.remove('map-view')
-  document.body.classList.add('list-view')
-
-  if (listViewBtn) listViewBtn.classList.add('active')
-  if (mapViewBtn) mapViewBtn.classList.remove('active')
-}
-
-function setupSubmitMystery() {
-  const submitToggle = document.getElementById('submitToggle')
-  const submitPanel = document.getElementById('submitPanel')
-  const submitBtn = document.getElementById('submitMysteryBtn')
-  const closeSubmitPanel = document.getElementById('closeSubmitPanel')
-
-  if (!submitToggle || !submitPanel || !submitBtn) return
-
-  submitToggle.onclick = () => {
-    trackEvent('Open Submit Form')
-
-    submitPanel.style.display =
-      submitPanel.style.display === 'none' || submitPanel.style.display === ''
-        ? 'block'
-        : 'none'
+function fitMapToMarkers() {
+  if (markers.length === 0) {
+    map.setCenter(DEFAULT_CENTER);
+    map.setZoom(DEFAULT_ZOOM);
+    return;
   }
 
-  if (closeSubmitPanel) {
-    closeSubmitPanel.onclick = () => {
-      trackEvent('Close Submit Form')
-      submitPanel.style.display = 'none'
-    }
+  if (markers.length === 1) {
+    map.setCenter(markers[0].getPosition());
+    map.setZoom(12);
+    return;
   }
 
-  submitBtn.onclick = async () => {
-    const name = document.getElementById('submitName').value.trim()
-    const city = document.getElementById('submitCity').value.trim()
-    const region = document.getElementById('submitRegion').value.trim()
-    const category = document.getElementById('submitCategory').value
-    const latitude = Number(document.getElementById('submitLat').value)
-    const longitude = Number(document.getElementById('submitLng').value)
-    const story = document.getElementById('submitStory').value.trim()
+  const bounds = new google.maps.LatLngBounds();
 
-    if (!name || !latitude || !longitude || !story) {
-      trackEvent('Submit Form Validation Error')
-      alert('Please add a name, latitude, longitude and short story.')
-      return
-    }
+  markers.forEach((marker) => {
+    bounds.extend(marker.getPosition());
+  });
 
-    const { error } = await supabase.from('locations').insert({
-      name,
-      slug: `${createSlug(name)}-${Date.now()}`,
-      category,
-      location_type: 'Unknown',
-      country: 'Australia',
-      region,
-      city,
-      latitude,
-      longitude,
-      short_description: story,
-      mystery_score: null,
-      tags: [category, 'User Submitted'],
-      is_featured: false,
-      status: 'Needs Review'
-    })
-
-    if (error) {
-      console.error(error)
-      trackEvent('Mystery Submission Failed')
-      alert('Submission failed.')
-      return
-    }
-
-    trackEvent('Mystery Submitted', {
-      category,
-      region: region || 'Unknown'
-    })
-
-    alert('Thanks. Your mystery has been submitted for review.')
-    clearSubmitForm()
-    submitPanel.style.display = 'none'
-  }
+  map.fitBounds(bounds);
 }
 
-function clearSubmitForm() {
-  ;['submitName','submitCity','submitRegion','submitLat','submitLng','submitStory'].forEach((id) => {
-    const field = document.getElementById(id)
-    if (field) field.value = ''
-  })
-}
+function updateSubtitle() {
+  const subtitle = document.getElementById("subtitle");
+  if (!subtitle) return;
 
-function toggleLeyLines() {
-  leyVisible = !leyVisible
-
-  trackEvent('Toggle Ley Lines', {
-    visible: leyVisible ? 'true' : 'false'
-  })
-
-  const leyBtn = document.getElementById('leyToggle')
-  if (leyBtn) leyBtn.textContent = leyVisible ? '✕' : '⚡'
-
-  if (leyVisible) {
-    leyLines = getLeyLinePaths().map((line) => {
-      const polyline = new google.maps.Polyline({
-        path: line.path,
-        geodesic: true,
-        strokeColor: line.color,
-        strokeOpacity: 0.8,
-        strokeWeight: 2
-      })
-
-      polyline.setMap(map)
-      return polyline
-    })
-  } else {
-    leyLines.forEach((line) => line.setMap(null))
-    leyLines = []
-  }
-}
-
-function getLeyLinePaths() {
-  return [
-    { path: [{ lat: 51.1789, lng: -1.8262 }, { lat: 29.9792, lng: 31.1342 }], color: '#ff6b6b' },
-    { path: [{ lat: -25.3444, lng: 131.0369 }, { lat: -13.1631, lng: -72.545 }], color: '#4ecdc4' },
-    { path: [{ lat: 41.3095, lng: -122.3121 }, { lat: 25, lng: -71 }], color: '#45b7d1' },
-    { path: [{ lat: -33.8568, lng: 151.2153 }, { lat: -37.8136, lng: 144.9631 }], color: '#a29bfe' }
-  ]
+  subtitle.textContent = `${filteredLocations.length} mysteries mapped • Mapping the Unexplained`;
 }
 
 function centerOnUser() {
-  trackEvent('Near Me Click')
-
   if (!navigator.geolocation) {
-    alert('Geolocation is not supported by your browser.')
-    return
+    alert("Geolocation is not supported by this browser.");
+    return;
   }
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      trackEvent('Near Me Success')
-
-      const userLocation = {
+      const userPosition = {
         lat: position.coords.latitude,
-        lng: position.coords.longitude
+        lng: position.coords.longitude,
+      };
+
+      map.setCenter(userPosition);
+      map.setZoom(12);
+
+      if (userMarker) {
+        userMarker.setMap(null);
       }
 
-      showMapView()
-      map.setCenter(userLocation)
-      map.setZoom(10)
-
-      if (userMarker) userMarker.setMap(null)
-
       userMarker = new google.maps.Marker({
-        position: userLocation,
+        position: userPosition,
         map,
-        title: 'Your Location',
+        title: "Your location",
         icon: {
-          url: USER_LOCATION_ICON,
-          scaledSize: new google.maps.Size(40, 40)
-        }
-      })
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#4fc3f7",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2,
+        },
+      });
     },
     () => {
-      trackEvent('Near Me Failed')
-      alert('Unable to get your location.')
+      alert("Unable to access your location.");
     }
-  )
+  );
 }
 
-function createSlug(value) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+function setupLeyLines() {
+  const leyLinePaths = [
+    [
+      { lat: 51.1789, lng: -1.8262 },
+      { lat: 29.9792, lng: 31.1342 },
+    ],
+    [
+      { lat: -25.3444, lng: 131.0369 },
+      { lat: -13.1631, lng: -72.545 },
+    ],
+    [
+      { lat: 41.4099, lng: -122.1944 },
+      { lat: 25.0000, lng: -71.0000 },
+    ],
+    [
+      { lat: -33.8688, lng: 151.2093 },
+      { lat: -37.8136, lng: 144.9631 },
+    ],
+  ];
+
+  leyLinePolylines = leyLinePaths.map((path) => {
+    return new google.maps.Polyline({
+      path,
+      geodesic: true,
+      strokeColor: "#c9a24e",
+      strokeOpacity: 0.7,
+      strokeWeight: 2,
+    });
+  });
 }
 
-function renderStars(score) {
-  const value = Math.max(0, Math.min(10, Number(score) || 0))
-  const rounded = Math.round(value)
+function toggleLeyLines() {
+  leyLinesVisible = !leyLinesVisible;
 
-  return '★'.repeat(rounded) + '☆'.repeat(10 - rounded)
-}
+  leyLinePolylines.forEach((line) => {
+    line.setMap(leyLinesVisible ? map : null);
+  });
 
-function trackEvent(eventName, eventData = {}) {
-  if (window.umami) {
-    window.umami.track(eventName, eventData)
+  const leyLinesButton = document.getElementById("leyLinesButton");
+  if (leyLinesButton) {
+    leyLinesButton.textContent = leyLinesVisible
+      ? "Hide Ley Lines"
+      : "Show Ley Lines";
   }
 }
 
-function escapeAttribute(value) {
-  return String(value || '')
-    .replaceAll('\\', '\\\\')
-    .replaceAll("'", "\\'")
-    .replaceAll('"', '&quot;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
+function setMobileView(view) {
+  const app = document.body;
+  const mapViewBtn = document.getElementById("mapViewBtn");
+  const listViewBtn = document.getElementById("listViewBtn");
+
+  if (view === "list") {
+    app.classList.add("show-list");
+    app.classList.remove("show-map");
+    mapViewBtn?.classList.remove("active");
+    listViewBtn?.classList.add("active");
+  } else {
+    app.classList.add("show-map");
+    app.classList.remove("show-list");
+    listViewBtn?.classList.remove("active");
+    mapViewBtn?.classList.add("active");
+
+    setTimeout(() => {
+      google.maps.event.trigger(map, "resize");
+      fitMapToMarkers();
+    }, 100);
+  }
+}
+
+async function handleSubmitMystery(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const formData = new FormData(form);
+
+  const name = String(formData.get("name") || "").trim();
+  const category = String(formData.get("category") || "Unexplained").trim();
+  const description = String(formData.get("description") || "").trim();
+  const city = String(formData.get("city") || "").trim();
+  const region = String(formData.get("region") || "").trim();
+
+  if (!name || !description) {
+    alert("Please add a name and description.");
+    return;
+  }
+
+  const submission = {
+    name,
+    slug: `${createSlug(name)}-${Date.now()}`,
+    category,
+    location_type: "Unknown",
+    country: "Australia",
+    region,
+    city,
+    short_description: description,
+    mystery_score: 5,
+    tags: [category, "User Submitted"],
+    is_featured: false,
+    status: "Needs Review",
+    evidence_level: "User Submitted",
+  };
+
+  const { error } = await supabase.from("locations").insert(submission);
+
+  if (error) {
+    console.error("Error submitting mystery:", error);
+    alert("Something went wrong. Please try again.");
+    return;
+  }
+
+  form.reset();
+  alert("Mystery submitted for review.");
+}
+
+function createSlug(value) {
+  return value
+    .toLowerCase()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function escapeHtml(value) {
   return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
-              }
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
