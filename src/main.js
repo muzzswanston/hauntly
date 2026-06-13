@@ -92,8 +92,21 @@ function setupEventListeners() {
   const submitBtn = document.getElementById('submitMysteryBtn')
   const closeSubmitPanel = document.getElementById('closeSubmitPanel')
   const filterToggle = document.getElementById('filterToggle')
+  if (legendToggle && legendPanel) {
+  legendToggle.onclick = () => {
+    trackEvent('Toggle Evidence Legend')
+
+    legendPanel.style.display =
+      legendPanel.style.display === 'none' || legendPanel.style.display === ''
+        ? 'block'
+        : 'none'
+  }
+  }
+  
   const filtersPanel = document.getElementById('filtersPanel')
 
+  const legendToggle = document.getElementById('legendToggle')
+const legendPanel = document.getElementById('legendPanel')
   if (searchInput) {
     searchInput.addEventListener('input', applyFilters)
   }
