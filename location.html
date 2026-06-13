@@ -127,6 +127,44 @@
         grid-template-columns:1fr;
       }
     }
+    #evidenceLegendModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  z-index:9999;
+  padding:1rem;
+}
+
+#evidenceLegendCard{
+  max-width:380px;
+  margin:10vh auto;
+  background:#101018;
+  border:1px solid #c9a24e;
+  border-radius:12px;
+  padding:1rem;
+  box-shadow:0 0 30px rgba(0,0,0,.6);
+}
+
+#evidenceLegendCard h3{
+  color:#e8d39a;
+  margin-top:0;
+}
+
+#evidenceLegendCard p{
+  margin:.75rem 0;
+  line-height:1.4;
+}
+
+#closeEvidenceLegend{
+  margin-top:10px;
+  padding:8px 14px;
+  background:#c9a24e;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
   </style>
 </head>
 
@@ -173,6 +211,43 @@
         </div>
       </aside>
     </div>
+  </div>
+
+  <div id="evidenceLegendModal">
+  <div id="evidenceLegendCard">
+
+    <h3>Evidence Levels</h3>
+
+    <p>
+      <strong style="color:#2ecc71;">Verified</strong><br>
+      Strong evidence from primary sources, official records or multiple reliable reports.
+    </p>
+
+    <p>
+      <strong style="color:#c9a24e;">Documented</strong><br>
+      Supported by historical records, news reports or credible references.
+    </p>
+
+    <p>
+      <strong style="color:#9b59b6;">Folklore</strong><br>
+      Based mainly on local legends, traditions or oral history.
+    </p>
+
+    <p>
+      <strong style="color:#ff9800;">Researching</strong><br>
+      Recently added and currently being reviewed.
+    </p>
+
+    <p>
+      <strong style="color:#3498db;">User Submitted</strong><br>
+      Submitted by the community and awaiting verification.
+    </p>
+
+    <button id="closeEvidenceLegend" type="button">
+      Close
+    </button>
+
+  </div>
   </div>
 </body>
 </html>
