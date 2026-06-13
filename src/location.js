@@ -406,10 +406,7 @@ function setupEvidenceLegend() {
       modal.style.display = 'none'
     }
   }
-}const filtersPanel = document.getElementById('filtersPanel')
-
-const legendToggle = document.getElementById('legendToggle')
-const legendPanel = document.getElementById('legendPanel')
+}
 
 
 function setText(id, value) {
