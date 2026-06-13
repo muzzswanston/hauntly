@@ -274,7 +274,7 @@ function buildMetaPanel(location) {
       ${escapeHtml(location.location_type || 'Unknown')}
     </div>
 
-    <div class="meta-item">
+<div class="meta-item">
   <strong>
     Evidence Level
     <button
@@ -295,8 +295,24 @@ function buildMetaPanel(location) {
     >
       ?
     </button>
-  </strong><br>
-  ${escapeHtml(location.evidence_level || 'Unknown')}
+  </strong>
+  <br>
+
+  <span
+    style="
+      display:inline-block;
+      margin-top:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:${getEvidenceBadgeColor(location.evidence_level)};
+      color:white;
+      font-size:.8rem;
+      font-weight:bold;
+      text-transform:uppercase;
+    "
+  >
+    ${escapeHtml(location.evidence_level || 'Unknown')}
+  </span>
 </div>
 
 <div class="meta-item">
@@ -465,6 +481,28 @@ function escapeAttribute(value) {
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
+}
+
+function getEvidenceBadgeColor(level) {
+  switch (String(level || '').toLowerCase()) {
+    case 'verified':
+      return '#2ecc71'
+
+    case 'documented':
+      return '#c9a24e'
+
+    case 'folklore':
+      return '#9b59b6'
+
+    case 'researching':
+      return '#ff9800'
+
+    case 'user submitted':
+      return '#3498db'
+
+    default:
+      return '#95a5a6'
+  }
 }
 
 function escapeHtml(value) {
