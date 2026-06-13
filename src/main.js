@@ -92,6 +92,14 @@ function setupEventListeners() {
   const submitBtn = document.getElementById('submitMysteryBtn')
   const closeSubmitPanel = document.getElementById('closeSubmitPanel')
   const filterToggle = document.getElementById('filterToggle')
+  const filtersPanel = document.getElementById('filtersPanel')
+
+  const legendToggle = document.getElementById('legendToggle')
+  const legendPanel = document.getElementById('legendPanel')
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilters)
+  }
+
   if (legendToggle && legendPanel) {
   legendToggle.onclick = () => {
     trackEvent('Toggle Evidence Legend')
@@ -101,16 +109,8 @@ function setupEventListeners() {
         ? 'block'
         : 'none'
   }
-  }
+}
   
-  const filtersPanel = document.getElementById('filtersPanel')
-
-  const legendToggle = document.getElementById('legendToggle')
-const legendPanel = document.getElementById('legendPanel')
-  if (searchInput) {
-    searchInput.addEventListener('input', applyFilters)
-  }
-
   categoryButtons.forEach((button) => {
     button.addEventListener('click', () => {
       selectedCategory = button.dataset.category || button.textContent.trim() || 'All'
@@ -737,4 +737,4 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;')
-    }
+}
