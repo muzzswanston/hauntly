@@ -353,6 +353,35 @@
       cursor:pointer;
     }
 
+    #legendPanel{
+  position:absolute;
+  top:12px;
+  left:245px;
+  z-index:15;
+  width:320px;
+  background:#101018;
+  border:1px solid #c9a24e;
+  border-radius:14px;
+  padding:1rem;
+  display:none;
+  box-shadow:0 0 30px rgba(0,0,0,.5);
+}
+
+#legendPanel h3{
+  color:#e8d39a;
+  margin-bottom:.5rem;
+}
+
+#legendPanel p{
+  margin:.75rem 0;
+  line-height:1.4;
+  font-size:.85rem;
+}
+
+#legendToggle{
+  background:linear-gradient(135deg,#34495e,#2c3e50)!important;
+}
+    
     footer{
       text-align:center;
       padding:.5rem;
@@ -368,7 +397,14 @@
       h1{font-size:1.45rem;}
       .subtitle{font-size:.8rem;}
       .desktop-only{display:none;}
-
+      #legendPanel{
+  left:10px;
+  right:70px;
+  top:10px;
+  width:auto;
+  max-height:calc(100vh - 180px);
+  overflow-y:auto;
+      }
       #searchBox{
         padding:.6rem .9rem;
         margin-top:.35rem;
@@ -439,6 +475,7 @@
       <button id="gpsBtn" title="Near Me">📍</button>
       <button id="leyToggle" title="Ley Lines">⚡</button>
       <button id="filterToggle" title="Filters">☰</button>
+      <button id="legendToggle" title="Evidence Levels">?</button>
       <button id="submitToggle" title="Submit Mystery">＋</button>
     </div>
 
@@ -452,6 +489,25 @@
         <span class="category-pill" data-category="Cryptid">Cryptid</span>
         <span class="category-pill" data-category="Unexplained">Unexplained</span>
       </div>
+    </div>
+
+    <div id="legendPanel">
+  <h3>Evidence Levels</h3>
+
+  <p><strong style="color:#2ecc71;">Verified</strong><br>
+  Strong evidence from primary sources, official records or multiple reliable reports.</p>
+
+  <p><strong style="color:#c9a24e;">Documented</strong><br>
+  Supported by historical records, news reports or credible references.</p>
+
+  <p><strong style="color:#9b59b6;">Folklore</strong><br>
+  Based mainly on local legends, traditions or oral history.</p>
+
+  <p><strong style="color:#ff9800;">Researching</strong><br>
+  Recently added and currently being reviewed.</p>
+
+  <p><strong style="color:#3498db;">User Submitted</strong><br>
+  Submitted by the community and awaiting verification.</p>
     </div>
 
     <div id="resultsPanel">
@@ -472,7 +528,7 @@
         <option>UFO</option>
         <option>Folklore</option>
         <option>Cryptid</option>
-        <option>Unexplained</option>
+        <option>Unexplained</option>3
       </select>
 
       <input id="submitLat" placeholder="Latitude" />
