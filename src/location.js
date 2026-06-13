@@ -29,6 +29,7 @@ async function loadLocation() {
     }
 
     populatePage(data)
+    setupEvidenceLegend()
     trackLocationView(data)
     await loadRelatedOrNearbyLocations(data)
   } catch (err) {
@@ -274,6 +275,36 @@ function buildMetaPanel(location) {
     </div>
 
     <div class="meta-item">
+  <strong>
+    Evidence Level
+    <button
+      id="evidenceHelp"
+      type="button"
+      style="
+        width:22px;
+        height:22px;
+        margin-left:6px;
+        border-radius:999px;
+        border:1px solid #c9a24e;
+        background:#101018;
+        color:#c9a24e;
+        cursor:pointer;
+        font-weight:bold;
+      "
+      title="Evidence level guide"
+    >
+      ?
+    </button>
+  </strong><br>
+  ${escapeHtml(location.evidence_level || 'Unknown')}
+</div>
+
+<div class="meta-item">
+  <strong>Status</strong><br>
+  ${escapeHtml(location.status || 'Unknown')}
+</div>
+
+    <div class="meta-item">
       <strong>Mystery Score</strong><br>
       <span style="color:#c9a24e;letter-spacing:1px;">
         ${stars}
@@ -352,6 +383,34 @@ function buildMetaPanel(location) {
     }
   `
 }
+
+function setupEvidenceLegend() {
+  const help = document.getElementById('evidenceHelp')
+  const modal = document.getElementById('evidenceLegendModal')
+  const close = document.getElementById('closeEvidenceLegend')
+
+  if (!help || !modal) return
+
+  help.onclick = () => {
+    modal.style.display = 'block'
+  }
+
+  if (close) {
+    close.onclick = () => {
+      modal.style.display = 'none'
+    }
+  }
+
+  modal.onclick = (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none'
+    }
+  }
+}const filtersPanel = document.getElementById('filtersPanel')
+
+const legendToggle = document.getElementById('legendToggle')
+const legendPanel = document.getElementById('legendPanel')
+
 
 function setText(id, value) {
   const element = document.getElementById(id)
