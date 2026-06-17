@@ -381,7 +381,43 @@
 #legendToggle{
   background:linear-gradient(135deg,#34495e,#2c3e50)!important;
 }
-    
+#newsletterBanner{
+  background:#11151f;
+  border-bottom:1px solid #c9a24e;
+  padding:1rem;
+  text-align:center;
+}
+
+.newsletter-content{
+  max-width:800px;
+  margin:0 auto;
+}
+
+.newsletter-content h2{
+  color:#e8d39a;
+  margin-bottom:.4rem;
+  font-size:1.4rem;
+}
+
+.newsletter-content p{
+  color:#d7cfbd;
+  margin-bottom:.8rem;
+  line-height:1.5;
+}
+
+.newsletter-btn{
+  display:inline-block;
+  background:linear-gradient(135deg,#8b5e1f,#c9a24e);
+  color:#fff;
+  text-decoration:none;
+  padding:.75rem 1.5rem;
+  border-radius:999px;
+  font-weight:bold;
+}
+
+.newsletter-btn:hover{
+  opacity:.9;
+}    
     footer{
       text-align:center;
       padding:.5rem;
@@ -467,7 +503,24 @@
       <button id="listViewBtn" class="view-tab">List</button>
     </div>
   </header>
+<section id="newsletterBanner">
+  <div class="newsletter-content">
+    <h2>📬 Join The Mystery Atlas Dispatch</h2>
 
+    <p>
+      Discover Australia's strangest mysteries every Friday.
+      Haunted locations, UFO encounters, cryptid sightings,
+      disappearances and unexplained events delivered free.
+    </p>
+
+    <a
+      href="https://YOURPUBLICATION.beehiiv.com"
+      target="_blank"
+      class="newsletter-btn">
+      Join the Dispatch
+    </a>
+  </div>
+</section>
   <div id="mapWrap">
     <div id="map"></div>
 
@@ -477,6 +530,7 @@
       <button id="filterToggle" title="Filters">☰</button>
       <button id="legendToggle" title="Evidence Levels">?</button>
       <button id="submitToggle" title="Submit Mystery">＋</button>
+      <button id="newsletterBtn" title="Newsletter">📬</button>
     </div>
 
     <div id="filtersPanel">
