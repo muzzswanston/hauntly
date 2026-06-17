@@ -84,6 +84,9 @@ function setupEventListeners() {
   const categoryButtons = document.querySelectorAll('[data-category], .category-pill')
   const gpsButton = document.getElementById('gpsButton') || document.getElementById('gpsBtn')
   const leyLinesButton = document.getElementById('leyLinesButton') || document.getElementById('leyToggle')
+  document.getElementById('newsletterBtn')?.addEventListener('click', () => {
+  window.open('https://mysteryatlas.beehiiv.com', '_blank');
+});
   const mapViewBtn = document.getElementById('mapViewBtn')
   const listViewBtn = document.getElementById('listViewBtn')
   const submitForm = document.getElementById('submitMysteryForm')
