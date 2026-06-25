@@ -104,6 +104,44 @@ function addWhyItMattersSection(location) {
   descriptionSection.insertAdjacentElement('afterend', section)
 }
 
+function addCaseFileSection(location) {
+  if (!location.has_case_file || !location.case_file_slug) return
+
+  const historySection = document.getElementById('history')?.closest('.section')
+  if (!historySection) return
+
+  const section = document.createElement('div')
+  section.className = 'section'
+
+  section.innerHTML = `
+    <h2>Official Case File</h2>
+
+    <p>
+      Explore the complete investigation including the timeline,
+      evidence, theories and verdict.
+    </p>
+
+    <a
+      href="/casefile.html?slug=${encodeURIComponent(location.case_file_slug)}"
+      style="
+        display:inline-block;
+        margin-top:10px;
+        background:#c9a24e;
+        color:#111;
+        padding:10px 16px;
+        border-radius:999px;
+        text-decoration:none;
+        font-weight:bold;
+        font-family:Arial, sans-serif;
+      "
+    >
+      Open Case File →
+    </a>
+  `
+
+  historySection.insertAdjacentElement('beforebegin', section)
+}
+
 function trackLocationView(location) {
   if (!window.umami) return
 
