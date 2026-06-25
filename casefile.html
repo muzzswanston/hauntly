@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Mystery Atlas Case File</title>
+
+  <meta name="description"
+    content="Mystery Atlas official investigation files covering haunted places, UFO encounters, cryptids and unexplained mysteries.">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0b0d12;
+      color: #e8e1cf;
+      font-family: Georgia, serif;
+      line-height: 1.75;
+    }
+
+    a {
+      color: #c9a24e;
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: auto;
+      padding: 30px 20px 80px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 25px;
+      color: #c9a24e;
+      text-decoration: none;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+    }
+
+    .case-header {
+      background: #171d26;
+      border: 2px solid rgba(201, 162, 78, .45);
+      padding: 30px;
+      margin-bottom: 35px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, .35);
+    }
+
+    .status {
+      display: inline-block;
+      padding: 8px 14px;
+      border: 2px solid #a52a2a;
+      color: #d84d4d;
+      font-family: Arial, sans-serif;
+      text-transform: uppercase;
+      font-weight: bold;
+      letter-spacing: .08em;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.1;
+      color: white;
+    }
+
+    .subtitle {
+      margin-top: 15px;
+      color: #c9a24e;
+      font-size: 1.15rem;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .meta div {
+      background: #11161d;
+      border: 1px solid rgba(255, 255, 255, .08);
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .meta strong {
+      display: block;
+      color: #c9a24e;
+      margin-bottom: 6px;
+      font-family: Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: .8rem;
+      letter-spacing: .05em;
+    }
+
+    .section {
+      background: #171d26;
+      margin-top: 30px;
+      padding: 28px;
+      border-left: 5px solid #c9a24e;
+      border-radius: 6px;
+    }
+
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-family: Arial, sans-serif;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 1rem;
+    }
+
+    .timeline-item {
+      margin-bottom: 22px;
+      padding-left: 18px;
+      border-left: 2px solid rgba(201, 162, 78, .4);
+    }
+
+    .timeline-item strong {
+      color: #c9a24e;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .theory {
+      background: #11161d;
+      border: 1px solid rgba(255, 255, 255, .08);
+      padding: 18px;
+      margin-bottom: 18px;
+      border-radius: 6px;
+    }
+
+    .theory h3 {
+      margin-top: 0;
+      color: white;
+    }
+
+    .rating {
+      display: inline-block;
+      margin-top: 10px;
+      color: #c9a24e;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      font-size: .85rem;
+    }
+
+    .verdict {
+      margin-top: 35px;
+      background: rgba(201, 162, 78, .08);
+      border: 2px solid rgba(201, 162, 78, .45);
+      padding: 30px;
+      border-radius: 6px;
+    }
+
+    .verdict strong {
+      color: #c9a24e;
+      font-family: Arial, sans-serif;
+      text-transform: uppercase;
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      color: #888;
+      font-size: .9rem;
+      font-family: Arial, sans-serif;
+    }
+
+    @media (max-width:700px) {
+
+      .container {
+        padding: 20px 15px 50px;
+      }
+
+      .case-header,
+      .section,
+      .verdict {
+        padding: 20px;
+      }
+
+      .meta {
+        grid-template-columns: 1fr;
+      }
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <a href="javascript:history.back()" class="back-link">
+      ← Back to Mystery
+    </a>
+
+    <div id="caseContent">
+
+      <div class="section">
+
+        <h2>Loading Case File...</h2>
+
+        <p>Please wait while the investigation is retrieved.</p>
+
+      </div>
+
+    </div>
+
+    <footer>
+
+      Mystery Atlas • Mapping the Unexplained
+
+    </footer>
+
+  </div>
+
+  <script type="module" src="/src/casefile.js"></script>
+
+</body>
+
+</html>
