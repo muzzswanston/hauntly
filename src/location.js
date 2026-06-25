@@ -79,7 +79,9 @@ function populatePage(location) {
   )
 
   addWhyItMattersSection(location)
+  addCaseFileSection(location)
   buildMetaPanel(location)
+}
 }
 
 function addWhyItMattersSection(location) {
