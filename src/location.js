@@ -82,7 +82,7 @@ function populatePage(location) {
   addCaseFileSection(location)
   buildMetaPanel(location)
 }
-}
+
 
 function addWhyItMattersSection(location) {
   if (!location.why_it_matters) return
