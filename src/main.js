@@ -30,7 +30,8 @@ const CATEGORY_ICONS = {
   UFO: '🛸',
   Folklore: '📜',
   Cryptid: '🐾',
-  Unexplained: '❓'
+  Unexplained: '❓',
+  'Celebrity Hunt': '📺'
 }
 
 window.initMap = async function initMap() {
@@ -184,7 +185,10 @@ function applyFilters() {
 
   filteredLocations = allLocations.filter((location) => {
     const matchesCategory =
-      selectedCategory === 'All' || location.category === selectedCategory
+      selectedCategory === 'All' || 
+      (selectedCategory === 'Celebrity Hunt' 
+        ? (Array.isArray(location.celebrity_investigators) ? location.celebrity_investigators.length > 0 : Boolean(location.celebrity_investigators))
+        : location.category === selectedCategory)
 
     const searchableText = [
       location.name,
@@ -196,7 +200,9 @@ function applyFilters() {
       location.short_description,
       location.why_it_matters,
       location.evidence_level,
-      location.status
+      location.status,
+      Array.isArray(location.celebrity_investigators) ? location.celebrity_investigators.join(' ') : '',
+      Array.isArray(location.featured_in_media) ? location.featured_in_media.join(' ') : ''
     ]
       .filter(Boolean)
       .join(' ')
@@ -240,6 +246,7 @@ function clearMarkers() {
 
 function getEvidenceColor(location) {
   if (location.status === 'Researching') return '#ff9800'
+  if (location.celebrity_investigators && location.celebrity_investigators.length > 0) return '#6c5ce7'
 
   switch (location.evidence_level) {
     case 'Verified':
@@ -258,7 +265,8 @@ function getEvidenceColor(location) {
 }
 
 function createMarkerIcon(category, location) {
-  const emoji = CATEGORY_ICONS[category] || '❓'
+  const hasCeleb = location.celebrity_investigators && location.celebrity_investigators.length > 0
+  const emoji = hasCeleb ? '📺' : (CATEGORY_ICONS[category] || '❓')
   const strokeColor = getEvidenceColor(location)
 
   const svg = `
@@ -304,10 +312,26 @@ function openLocationInfo(location, marker) {
       `
       : ''
 
+  const celebInvestigators = Array.isArray(location.celebrity_investigators) 
+    ? location.celebrity_investigators.join(', ') 
+    : (location.celebrity_investigators || '')
+
+  const tvBadgeHtml = celebInvestigators
+    ? `
+      <div style="margin:6px 0;padding:6px 10px;background:#2d1b69;color:#e8d39a;border-radius:6px;font-size:0.8rem;font-weight:bold;">
+        📺 Investigated by: ${escapeHtml(celebInvestigators)}
+      </div>
+    `
+    : ''
+
   // Contextual monetization / booking CTA for hotels and tours near the haunted location
   const cityQuery = encodeURIComponent(`${location.city || ''} ${location.region || ''} ghost tour accommodation`)
   const bookingFallbackUrl = location.affiliate_url || `https://www.booking.com/searchresults.html?ss=${cityQuery}`
   const tourFallbackUrl = `https://www.viator.com/searchResults/all?text=${cityQuery}`
+  
+  const bookingTitle = celebInvestigators 
+    ? `Stay & Tour Like ${escapeHtml(celebInvestigators)}!` 
+    : 'Spooky Stays Nearby'
 
   const infoHtml = `
     <div class="info-window" style="max-width:290px;font-family:Georgia;color:#111;">
@@ -329,6 +353,8 @@ function openLocationInfo(location, marker) {
         ${getStatusBadge(location)}
         ${getEvidenceBadge(location)}
       </div>
+
+      ${tvBadgeHtml}
 
       <p style="margin:6px 0;">
         <strong>${escapeHtml(location.category || 'Unknown')}</strong>
@@ -375,6 +401,7 @@ function openLocationInfo(location, marker) {
 
       <!-- Monetization Booking CTAs -->
       <div style="margin-top:10px;padding-top:8px;border-top:1px solid #ddd;">
+        <div style="font-size:0.8rem;font-weight:bold;margin-bottom:4px;color:#333;">${bookingTitle}</div>
         <a
           href="${escapeHtml(bookingFallbackUrl)}"
           target="_blank"
@@ -382,7 +409,7 @@ function openLocationInfo(location, marker) {
           onclick="window.umami?.track('Affiliate Click - Hotel', { location: '${escapeAttribute(location.name)}' })"
           style="display:block;background:#1b1b2f;color:#e8d39a;text-align:center;text-decoration:none;padding:8px;border-radius:6px;margin-bottom:6px;font-size:.9rem;font-weight:bold;"
         >
-          🏨 Spooky Stays Nearby
+          🏨 Book Hotel Nearby
         </a>
         <a
           href="${escapeHtml(tourFallbackUrl)}"
@@ -391,7 +418,7 @@ function openLocationInfo(location, marker) {
           onclick="window.umami?.track('Affiliate Click - Tour', { location: '${escapeAttribute(location.name)}' })"
           style="display:block;background:#1b1b2f;color:#e8d39a;text-align:center;text-decoration:none;padding:8px;border-radius:6px;font-size:.9rem;font-weight:bold;"
         >
-          🕯️ Book Ghost Tour
+          🕯️ Book Celebrity Ghost Tour
         </a>
       </div>
     </div>
@@ -417,6 +444,8 @@ function renderResults() {
     card.className = 'result-card result-item'
     card.type = 'button'
 
+    const hasCeleb = location.celebrity_investigators && location.celebrity_investigators.length > 0
+
     card.innerHTML = `
       <div class="result-header">
         <strong>${escapeHtml(location.name)}</strong>
@@ -425,6 +454,7 @@ function renderResults() {
       <div class="badge-row">
         ${getStatusBadge(location)}
         ${getEvidenceBadge(location)}
+        ${hasCeleb ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#2d1b69;color:#e8d39a;font-size:.75rem;font-weight:bold;">📺 TV Hunt</span>' : ''}
       </div>
 
       <div class="result-meta">
