@@ -84,9 +84,11 @@ function setupEventListeners() {
   const categoryButtons = document.querySelectorAll('[data-category], .category-pill')
   const gpsButton = document.getElementById('gpsButton') || document.getElementById('gpsBtn')
   const leyLinesButton = document.getElementById('leyLinesButton') || document.getElementById('leyToggle')
+  
   document.getElementById('newsletterBtn')?.addEventListener('click', () => {
-  window.open('https://mysteryatlas.beehiiv.com', '_blank');
-});
+    window.open('https://mysteryatlas.beehiiv.com', '_blank')
+  })
+
   const mapViewBtn = document.getElementById('mapViewBtn')
   const listViewBtn = document.getElementById('listViewBtn')
   const submitForm = document.getElementById('submitMysteryForm')
@@ -99,20 +101,20 @@ function setupEventListeners() {
 
   const legendToggle = document.getElementById('legendToggle')
   const legendPanel = document.getElementById('legendPanel')
+
   if (searchInput) {
     searchInput.addEventListener('input', applyFilters)
   }
 
   if (legendToggle && legendPanel) {
-  legendToggle.onclick = () => {
-    trackEvent('Toggle Evidence Legend')
-
-    legendPanel.style.display =
-      legendPanel.style.display === 'none' || legendPanel.style.display === ''
-        ? 'block'
-        : 'none'
+    legendToggle.onclick = () => {
+      trackEvent('Toggle Evidence Legend')
+      legendPanel.style.display =
+        legendPanel.style.display === 'none' || legendPanel.style.display === ''
+          ? 'block'
+          : 'none'
+    }
   }
-}
   
   categoryButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -130,7 +132,7 @@ function setupEventListeners() {
     })
   })
 
-  if (gpsButton) gpsButton.addEventListener('click', centerOnUser)
+  if (gpsButton) gpsButton.addEventListener('click', centerOnUserAndFetchNearby)
   if (leyLinesButton) leyLinesButton.addEventListener('click', toggleLeyLines)
 
   if (mapViewBtn && listViewBtn) {
@@ -302,6 +304,11 @@ function openLocationInfo(location, marker) {
       `
       : ''
 
+  // Contextual monetization / booking CTA for hotels and tours near the haunted location
+  const cityQuery = encodeURIComponent(`${location.city || ''} ${location.region || ''} ghost tour accommodation`)
+  const bookingFallbackUrl = location.affiliate_url || `https://www.booking.com/searchresults.html?ss=${cityQuery}`
+  const tourFallbackUrl = `https://www.viator.com/searchResults/all?text=${cityQuery}`
+
   const infoHtml = `
     <div class="info-window" style="max-width:290px;font-family:Georgia;color:#111;">
       ${imageHtml}
@@ -366,17 +373,27 @@ function openLocationInfo(location, marker) {
         Directions
       </a>
 
-      ${
-        location.source_url
-          ? `<a href="${escapeHtml(location.source_url)}" target="_blank" rel="noopener noreferrer">View source</a>`
-          : ''
-      }
-
-      ${
-        location.affiliate_url
-          ? `<a href="${escapeHtml(location.affiliate_url)}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:6px;">Book or explore nearby</a>`
-          : ''
-      }
+      <!-- Monetization Booking CTAs -->
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid #ddd;">
+        <a
+          href="${escapeHtml(bookingFallbackUrl)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          onclick="window.umami?.track('Affiliate Click - Hotel', { location: '${escapeAttribute(location.name)}' })"
+          style="display:block;background:#1b1b2f;color:#e8d39a;text-align:center;text-decoration:none;padding:8px;border-radius:6px;margin-bottom:6px;font-size:.9rem;font-weight:bold;"
+        >
+          🏨 Spooky Stays Nearby
+        </a>
+        <a
+          href="${escapeHtml(tourFallbackUrl)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          onclick="window.umami?.track('Affiliate Click - Tour', { location: '${escapeAttribute(location.name)}' })"
+          style="display:block;background:#1b1b2f;color:#e8d39a;text-align:center;text-decoration:none;padding:8px;border-radius:6px;font-size:.9rem;font-weight:bold;"
+        >
+          🕯️ Book Ghost Tour
+        </a>
+      </div>
     </div>
   `
 
@@ -521,7 +538,8 @@ function updateSubtitle() {
   subtitle.textContent = `${filteredLocations.length} mysteries mapped • Mapping the Unexplained`
 }
 
-function centerOnUser() {
+// Enhanced "Near Me" GPS action leveraging Supabase PostGIS RPC for lightning-fast radius filtering
+async function centerOnUserAndFetchNearby() {
   trackEvent('Near Me Click')
 
   if (!navigator.geolocation) {
@@ -530,16 +548,15 @@ function centerOnUser() {
   }
 
   navigator.geolocation.getCurrentPosition(
-    (position) => {
+    async (position) => {
       trackEvent('Near Me Success')
 
-      const userPosition = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      }
+      const userLat = position.coords.latitude
+      const userLng = position.coords.longitude
+      const userPosition = { lat: userLat, lng: userLng }
 
       map.setCenter(userPosition)
-      map.setZoom(12)
+      map.setZoom(11)
 
       if (userMarker) userMarker.setMap(null)
 
@@ -556,6 +573,22 @@ function centerOnUser() {
           strokeWeight: 2
         }
       })
+
+      // Call Supabase PostGIS RPC to fetch locations within a 100km radius efficiently
+      try {
+        const { data, error } = await supabase.rpc('get_nearby_locations', {
+          user_lat: userLat,
+          user_lon: userLng,
+          radius_km: 100
+        })
+
+        if (!error && data && data.length > 0) {
+          allLocations = data
+          applyFilters()
+        }
+      } catch (err) {
+        console.error('PostGIS RPC query error:', err)
+      }
     },
     () => {
       trackEvent('Near Me Failed')
@@ -734,7 +767,7 @@ function escapeAttribute(value) {
 }
 
 function escapeHtml(value) {
-  return String(value)
+  return String(value || '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
