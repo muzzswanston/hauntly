@@ -568,8 +568,8 @@ function updateSubtitle() {
   subtitle.textContent = `${filteredLocations.length} mysteries mapped • Mapping the Unexplained`
 }
 
-// Enhanced "Near Me" GPS action leveraging Supabase PostGIS RPC for lightning-fast radius filtering
-async function centerOnUserAndFetchNearby() {
+// "Near Me" GPS action: Centers and zooms on the user without overwriting or filtering out global database locations
+function centerOnUserAndFetchNearby() {
   trackEvent('Near Me Click')
 
   if (!navigator.geolocation) {
@@ -578,7 +578,7 @@ async function centerOnUserAndFetchNearby() {
   }
 
   navigator.geolocation.getCurrentPosition(
-    async (position) => {
+    (position) => {
       trackEvent('Near Me Success')
 
       const userLat = position.coords.latitude
@@ -603,22 +603,6 @@ async function centerOnUserAndFetchNearby() {
           strokeWeight: 2
         }
       })
-
-      // Call Supabase PostGIS RPC to fetch locations within a 100km radius efficiently
-      try {
-        const { data, error } = await supabase.rpc('get_nearby_locations', {
-          user_lat: userLat,
-          user_lon: userLng,
-          radius_km: 100
-        })
-
-        if (!error && data && data.length > 0) {
-          allLocations = data
-          applyFilters()
-        }
-      } catch (err) {
-        console.error('PostGIS RPC query error:', err)
-      }
     },
     () => {
       trackEvent('Near Me Failed')
