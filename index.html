@@ -354,70 +354,72 @@
     }
 
     #legendPanel{
-  position:absolute;
-  top:12px;
-  left:245px;
-  z-index:15;
-  width:320px;
-  background:#101018;
-  border:1px solid #c9a24e;
-  border-radius:14px;
-  padding:1rem;
-  display:none;
-  box-shadow:0 0 30px rgba(0,0,0,.5);
-}
+      position:absolute;
+      top:12px;
+      left:245px;
+      z-index:15;
+      width:320px;
+      background:#101018;
+      border:1px solid #c9a24e;
+      border-radius:14px;
+      padding:1rem;
+      display:none;
+      box-shadow:0 0 30px rgba(0,0,0,.5);
+    }
 
-#legendPanel h3{
-  color:#e8d39a;
-  margin-bottom:.5rem;
-}
+    #legendPanel h3{
+      color:#e8d39a;
+      margin-bottom:.5rem;
+    }
 
-#legendPanel p{
-  margin:.75rem 0;
-  line-height:1.4;
-  font-size:.85rem;
-}
+    #legendPanel p{
+      margin:.75rem 0;
+      line-height:1.4;
+      font-size:.85rem;
+    }
 
-#legendToggle{
-  background:linear-gradient(135deg,#34495e,#2c3e50)!important;
-}
-#newsletterBanner{
-  background:#11151f;
-  border-bottom:1px solid #c9a24e;
-  padding:1rem;
-  text-align:center;
-}
+    #legendToggle{
+      background:linear-gradient(135deg,#34495e,#2c3e50)!important;
+    }
+    
+    #newsletterBanner{
+      background:#11151f;
+      border-bottom:1px solid #c9a24e;
+      padding:1rem;
+      text-align:center;
+    }
 
-.newsletter-content{
-  max-width:800px;
-  margin:0 auto;
-}
+    .newsletter-content{
+      max-width:800px;
+      margin:0 auto;
+    }
 
-.newsletter-content h2{
-  color:#e8d39a;
-  margin-bottom:.4rem;
-  font-size:1.4rem;
-}
+    .newsletter-content h2{
+      color:#e8d39a;
+      margin-bottom:.4rem;
+      font-size:1.4rem;
+    }
 
-.newsletter-content p{
-  color:#d7cfbd;
-  margin-bottom:.8rem;
-  line-height:1.5;
-}
+    .newsletter-content p{
+      color:#d7cfbd;
+      margin-bottom:.8rem;
+      line-height:1.5;
+    }
 
-.newsletter-btn{
-  display:inline-block;
-  background:linear-gradient(135deg,#8b5e1f,#c9a24e);
-  color:#fff;
-  text-decoration:none;
-  padding:.75rem 1.5rem;
-  border-radius:999px;
-  font-weight:bold;
-}
+    .newsletter-btn{
+      display:inline-block;
+      background:linear-gradient(135deg,#8b5e1f,#c9a24e);
+      color:#fff;
+      text-decoration:none;
+      padding:.75rem 1.5rem;
+      border-radius:999px;
+      font-weight:bold;
+    }
 
-.newsletter-btn:hover{
-  opacity:.9;
-}    
+    .newsletter-btn:hover{
+      opacity:.9;
+    }    
+    
     footer{
       text-align:center;
       padding:.5rem;
@@ -433,14 +435,16 @@
       h1{font-size:1.45rem;}
       .subtitle{font-size:.8rem;}
       .desktop-only{display:none;}
-#legendPanel{
-  left:10px;
-  right:10px;
-  top:10px;
-  width:auto;
-  max-height:70vh;
-  overflow-y:auto;
-}
+      
+      #legendPanel{
+        left:10px;
+        right:10px;
+        top:10px;
+        width:auto;
+        max-height:70vh;
+        overflow-y:auto;
+      }
+      
       #searchBox{
         padding:.6rem .9rem;
         margin-top:.35rem;
@@ -503,24 +507,26 @@
       <button id="listViewBtn" class="view-tab">List</button>
     </div>
   </header>
-<section id="newsletterBanner">
-  <div class="newsletter-content">
-    <h2>📬 Join The Mystery Atlas Dispatch</h2>
 
-    <p>
-      Discover Australia's strangest mysteries every Friday.
-      Haunted locations, UFO encounters, cryptid sightings,
-      disappearances and unexplained events delivered free.
-    </p>
+  <section id="newsletterBanner">
+    <div class="newsletter-content">
+      <h2>📬 Join The Mystery Atlas Dispatch</h2>
 
-    <a
-      href="https://mysteryatlas.beehiiv.com"
-      target="_blank"
-      class="newsletter-btn">
-      Join the Dispatch
-    </a>
-  </div>
-</section>
+      <p>
+        Discover Australia's strangest mysteries every Friday.
+        Haunted locations, UFO encounters, cryptid sightings,
+        disappearances and unexplained events delivered free.
+      </p>
+
+      <a
+        href="https://mysteryatlas.beehiiv.com"
+        target="_blank"
+        class="newsletter-btn">
+        Join the Dispatch
+      </a>
+    </div>
+  </section>
+
   <div id="mapWrap">
     <div id="map"></div>
 
@@ -542,26 +548,27 @@
         <span class="category-pill" data-category="Folklore">Folklore</span>
         <span class="category-pill" data-category="Cryptid">Cryptid</span>
         <span class="category-pill" data-category="Unexplained">Unexplained</span>
+        <span class="category-pill" data-category="Celebrity Hunt">📺 Celebrity Hunts</span>
       </div>
     </div>
 
     <div id="legendPanel">
-  <h3>Evidence Levels</h3>
+      <h3>Evidence Levels</h3>
 
-  <p><strong style="color:#2ecc71;">Verified</strong><br>
-  Strong evidence from primary sources, official records or multiple reliable reports.</p>
+      <p><strong style="color:#2ecc71;">Verified</strong><br>
+      Strong evidence from primary sources, official records or multiple reliable reports.</p>
 
-  <p><strong style="color:#c9a24e;">Documented</strong><br>
-  Supported by historical records, news reports or credible references.</p>
+      <p><strong style="color:#c9a24e;">Documented</strong><br>
+      Supported by historical records, news reports or credible references.</p>
 
-  <p><strong style="color:#9b59b6;">Folklore</strong><br>
-  Based mainly on local legends, traditions or oral history.</p>
+      <p><strong style="color:#9b59b6;">Folklore</strong><br>
+      Based mainly on local legends, traditions or oral history.</p>
 
-  <p><strong style="color:#ff9800;">Researching</strong><br>
-  Recently added and currently being reviewed.</p>
+      <p><strong style="color:#ff9800;">Researching</strong><br>
+      Recently added and currently being reviewed.</p>
 
-  <p><strong style="color:#3498db;">User Submitted</strong><br>
-  Submitted by the community and awaiting verification.</p>
+      <p><strong style="color:#3498db;">User Submitted</strong><br>
+      Submitted by the community and awaiting verification.</p>
     </div>
 
     <div id="resultsPanel">
@@ -583,6 +590,7 @@
         <option>Folklore</option>
         <option>Cryptid</option>
         <option>Unexplained</option>
+        <option>Celebrity Hunt</option>
       </select>
 
       <input id="submitLat" placeholder="Latitude" />
