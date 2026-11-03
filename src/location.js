@@ -303,6 +303,11 @@ function buildMetaPanel(location) {
 
   const stars = renderStars(location.mystery_score)
 
+  // Construct dynamic fallback affiliate URLs based on city/region
+  const cityQuery = encodeURIComponent(`${location.city || ''} ${location.region || ''} ghost tour accommodation`)
+  const hotelUrl = location.affiliate_url || `https://www.booking.com/searchresults.html?ss=${cityQuery}`
+  const tourUrl = `https://www.viator.com/searchResults/all?text=${cityQuery}`
+
   panel.innerHTML = `
     <div class="meta-item">
       <strong>Category</strong><br>
@@ -314,51 +319,51 @@ function buildMetaPanel(location) {
       ${escapeHtml(location.location_type || 'Unknown')}
     </div>
 
-<div class="meta-item">
-  <strong>
-    Evidence Level
-    <button
-      id="evidenceHelp"
-      type="button"
-      style="
-        width:22px;
-        height:22px;
-        margin-left:6px;
-        border-radius:999px;
-        border:1px solid #c9a24e;
-        background:#101018;
-        color:#c9a24e;
-        cursor:pointer;
-        font-weight:bold;
-      "
-      title="Evidence level guide"
-    >
-      ?
-    </button>
-  </strong>
-  <br>
+    <div class="meta-item">
+      <strong>
+        Evidence Level
+        <button
+          id="evidenceHelp"
+          type="button"
+          style="
+            width:22px;
+            height:22px;
+            margin-left:6px;
+            border-radius:999px;
+            border:1px solid #c9a24e;
+            background:#101018;
+            color:#c9a24e;
+            cursor:pointer;
+            font-weight:bold;
+          "
+          title="Evidence level guide"
+        >
+          ?
+        </button>
+      </strong>
+      <br>
 
-  <span
-    style="
-      display:inline-block;
-      margin-top:6px;
-      padding:4px 10px;
-      border-radius:999px;
-      background:${getEvidenceBadgeColor(location.evidence_level)};
-      color:white;
-      font-size:.8rem;
-      font-weight:bold;
-      text-transform:uppercase;
-    "
-  >
-    ${escapeHtml(location.evidence_level || 'Unknown')}
-  </span>
-</div>
+      <span
+        style="
+          display:inline-block;
+          margin-top:6px;
+          padding:4px 10px;
+          border-radius:999px;
+          background:${getEvidenceBadgeColor(location.evidence_level)};
+          color:white;
+          font-size:.8rem;
+          font-weight:bold;
+          text-transform:uppercase;
+        "
+      >
+        ${escapeHtml(location.evidence_level || 'Unknown')}
+      </span>
+    </div>
 
-<div class="meta-item">
-  <strong>Status</strong><br>
-  ${escapeHtml(location.status || 'Unknown')}
-</div>
+    <div class="meta-item">
+      <strong>Status</strong><br>
+      ${escapeHtml(location.status || 'Unknown')}
+    </div>
 
     <div class="meta-item">
       <strong>Mystery Score</strong><br>
@@ -419,24 +424,28 @@ function buildMetaPanel(location) {
         : ''
     }
 
-    ${
-      location.affiliate_url
-        ? `
-        <div class="meta-item">
-          <a
-            href="${escapeHtml(location.affiliate_url)}"
-            target="_blank"
-            rel="noopener noreferrer"
-            onclick="window.umami?.track('Affiliate Click', {
-              location: '${escapeAttribute(location.name)}'
-            })"
-          >
-            Book / Explore Nearby
-          </a>
-        </div>
-      `
-        : ''
-    }
+    <!-- Monetization Booking CTAs (Hotels & Tours) -->
+    <div class="meta-item" style="background:#1b1b2f;padding:12px;border-radius:8px;margin-top:6px;border:1px solid #c9a24e33;">
+      <strong style="color:#e8d39a;display:block;margin-bottom:8px;">Plan Your Visit</strong>
+      <a
+        href="${escapeHtml(hotelUrl)}"
+        target="_blank"
+        rel="noopener noreferrer"
+        onclick="window.umami?.track('Affiliate Click - Hotel', { location: '${escapeAttribute(location.name)}' })"
+        style="display:block;color:#4fc3f7;text-decoration:none;margin-bottom:6px;font-size:.9rem;font-weight:bold;"
+      >
+        🏨 Spooky Stays Nearby →
+      </a>
+      <a
+        href="${escapeHtml(tourUrl)}"
+        target="_blank"
+        rel="noopener noreferrer"
+        onclick="window.umami?.track('Affiliate Click - Tour', { location: '${escapeAttribute(location.name)}' })"
+        style="display:block;color:#4fc3f7;text-decoration:none;font-size:.9rem;font-weight:bold;"
+      >
+        🕯️ Book Ghost Tour →
+      </a>
+    </div>
   `
 }
 
@@ -546,7 +555,7 @@ function getEvidenceBadgeColor(level) {
 }
 
 function escapeHtml(value) {
-  return String(value)
+  return String(value || '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
