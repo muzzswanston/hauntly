@@ -308,6 +308,26 @@ function buildMetaPanel(location) {
   const hotelUrl = location.affiliate_url || `https://www.booking.com/searchresults.html?ss=${cityQuery}`
   const tourUrl = `https://www.viator.com/searchResults/all?text=${cityQuery}`
 
+  const celebInvestigators = Array.isArray(location.celebrity_investigators) 
+    ? location.celebrity_investigators.join(', ') 
+    : (location.celebrity_investigators || '')
+
+  const mediaList = Array.isArray(location.featured_in_media)
+    ? location.featured_in_media.join(', ')
+    : (location.featured_in_media || '')
+
+  const tvMetaHtml = celebInvestigators || mediaList ? `
+    <div class="meta-item" style="background:#2d1b69;padding:12px;border-radius:8px;margin-top:6px;border:1px solid #c9a24e;">
+      <strong style="color:#e8d39a;display:block;margin-bottom:4px;">📺 TV Investigation</strong>
+      ${mediaList ? `<div style="font-size:0.85rem;color:#fff;margin-bottom:2px;"><strong>Show:</strong> ${escapeHtml(mediaList)}</div>` : ''}
+      ${celebInvestigators ? `<div style="font-size:0.85rem;color:#fff;"><strong>Investigators:</strong> ${escapeHtml(celebInvestigators)}</div>` : ''}
+    </div>
+  ` : ''
+
+  const bookingHeader = celebInvestigators 
+    ? `Walk in the Footsteps of ${escapeHtml(celebInvestigators)}` 
+    : 'Plan Your Visit'
+
   panel.innerHTML = `
     <div class="meta-item">
       <strong>Category</strong><br>
@@ -318,6 +338,8 @@ function buildMetaPanel(location) {
       <strong>Type</strong><br>
       ${escapeHtml(location.location_type || 'Unknown')}
     </div>
+
+    ${tvMetaHtml}
 
     <div class="meta-item">
       <strong>
@@ -426,7 +448,7 @@ function buildMetaPanel(location) {
 
     <!-- Monetization Booking CTAs (Hotels & Tours) -->
     <div class="meta-item" style="background:#1b1b2f;padding:12px;border-radius:8px;margin-top:6px;border:1px solid #c9a24e33;">
-      <strong style="color:#e8d39a;display:block;margin-bottom:8px;">Plan Your Visit</strong>
+      <strong style="color:#e8d39a;display:block;margin-bottom:8px;">${bookingHeader}</strong>
       <a
         href="${escapeHtml(hotelUrl)}"
         target="_blank"
