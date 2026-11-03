@@ -63,7 +63,7 @@ async function loadLocations() {
   const { data, error } = await supabase
     .from('locations')
     .select('*')
-    .in('status', ['Published', 'Researching'])
+    .in('status', ['Published', 'Active', 'Researching'])
     .order('name', { ascending: true })
 
   if (error) {
