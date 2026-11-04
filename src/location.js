@@ -172,7 +172,7 @@ async function loadRelatedLocations(currentLocation, container) {
       .from('locations')
       .select('*')
       .in('slug', currentLocation.related_slugs)
-      .eq('status', 'Published')
+      .in('status', ['Published', 'Active', 'Verified', 'Researching'])
 
     if (error || !data || !data.length) {
       await loadNearbyLocations(currentLocation, container)
@@ -197,7 +197,7 @@ async function loadNearbyLocations(currentLocation, container) {
     const { data, error } = await supabase
       .from('locations')
       .select('*')
-      .eq('status', 'Published')
+      .in('status', ['Published', 'Active', 'Verified', 'Researching'])
       .neq('id', currentLocation.id)
 
     if (error || !data) {
