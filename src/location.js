@@ -21,6 +21,7 @@ async function loadLocation() {
       .from('locations')
       .select('*')
       .eq('slug', slug)
+      .in('status', ['Published', 'Active', 'Verified', 'Researching'])
       .single()
 
     if (error || !data) {
@@ -82,7 +83,6 @@ function populatePage(location) {
   addCaseFileSection(location)
   buildMetaPanel(location)
 }
-
 
 function addWhyItMattersSection(location) {
   if (!location.why_it_matters) return
@@ -316,16 +316,17 @@ function buildMetaPanel(location) {
     ? location.featured_in_media.join(', ')
     : (location.featured_in_media || '')
 
+  // TV / Celebrity Section (Compliant factual attribution under nominative fair use)
   const tvMetaHtml = celebInvestigators || mediaList ? `
     <div class="meta-item" style="background:#2d1b69;padding:12px;border-radius:8px;margin-top:6px;border:1px solid #c9a24e;">
-      <strong style="color:#e8d39a;display:block;margin-bottom:4px;">📺 TV Investigation</strong>
+      <strong style="color:#e8d39a;display:block;margin-bottom:4px;">📺 Featured in Media</strong>
       ${mediaList ? `<div style="font-size:0.85rem;color:#fff;margin-bottom:2px;"><strong>Show:</strong> ${escapeHtml(mediaList)}</div>` : ''}
       ${celebInvestigators ? `<div style="font-size:0.85rem;color:#fff;"><strong>Investigators:</strong> ${escapeHtml(celebInvestigators)}</div>` : ''}
     </div>
   ` : ''
 
   const bookingHeader = celebInvestigators 
-    ? `Walk in the Footsteps of ${escapeHtml(celebInvestigators)}` 
+    ? `Explore Locations Featured With ${escapeHtml(celebInvestigators)}` 
     : 'Plan Your Visit'
 
   panel.innerHTML = `
@@ -446,7 +447,7 @@ function buildMetaPanel(location) {
         : ''
     }
 
-    <!-- Monetization Booking CTAs (Hotels & Tours) -->
+    <!-- Monetization Booking CTAs (Hotels & Tours with clear FTC affiliate compliance) -->
     <div class="meta-item" style="background:#1b1b2f;padding:12px;border-radius:8px;margin-top:6px;border:1px solid #c9a24e33;">
       <strong style="color:#e8d39a;display:block;margin-bottom:8px;">${bookingHeader}</strong>
       <a
@@ -494,7 +495,6 @@ function setupEvidenceLegend() {
     }
   }
 }
-
 
 function setText(id, value) {
   const element = document.getElementById(id)
