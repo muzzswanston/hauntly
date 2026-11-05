@@ -26,6 +26,7 @@ async function loadCaseFile() {
     }
 
     renderCaseFile(data)
+    trackCaseFileView(data)
   } catch (err) {
     console.error(err)
     showNotFound()
@@ -80,6 +81,7 @@ function renderCaseFile(caseFile) {
                 href="${escapeHtml(caseFile.source_url)}"
                 target="_blank"
                 rel="noopener noreferrer"
+                onclick="window.umami?.track('Case File Source Click', { title: '${escapeAttribute(caseFile.title)}' })"
                 style="color:#c9a24e;"
               >
                 View source information
@@ -182,6 +184,16 @@ function renderTheories(items) {
   `
 }
 
+function trackCaseFileView(caseFile) {
+  if (!window.umami) return
+
+  window.umami.track('Case File Viewed', {
+    title: caseFile.title,
+    category: caseFile.category || 'Unknown',
+    case_number: caseFile.case_number || 'N/A'
+  })
+}
+
 function showNotFound() {
   if (!caseContent) return
 
@@ -192,6 +204,15 @@ function showNotFound() {
       <a href="/" style="color:#c9a24e;">Return to Mystery Atlas</a>
     </section>
   `
+}
+
+function escapeAttribute(value) {
+  return String(value || '')
+    .replaceAll('\\', '\\\\')
+    .replaceAll("'", "\\'")
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
 }
 
 function escapeHtml(value) {
